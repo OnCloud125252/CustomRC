@@ -42,7 +42,10 @@ for file in $CUSTOMRC_RC_PATH/*; do
   fi
 done
 
-source "$(dirname "$0")/fix-prompt-at-bottom.sh"
+
+if [[ -f "$(dirname "$0")/fix-prompt-at-bottom.sh" ]]; then
+  source "$(dirname "$0")/fix-prompt-at-bottom.sh"
+fi
 
 fileName=
 file=
