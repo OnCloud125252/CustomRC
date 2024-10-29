@@ -14,7 +14,7 @@ Ref: [Wiki/RUNCOM](https://en.wikipedia.org/wiki/RUNCOM)
 # Installation
 
 ```bash
-git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc
+git clone --recurse-submodules https://github.com/OnCloud125252/CustomRC.git ~/.customrc
 ```
 
 ```bash
