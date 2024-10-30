@@ -5,6 +5,7 @@ CUSTOMRC_GLOBAL_IGNORE_LIST=(
 CUSTOMRC_IGNORE_LIST=(
   "cursor.sh"
   "iterm.sh"
+  "jankyborders"
 )
 
 is_ignored() {
