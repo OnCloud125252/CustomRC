@@ -1,8 +1,8 @@
 export PROTO_HOME="$HOME/.proto"
 export PATH="$PROTO_HOME/shims:$PROTO_HOME/bin:/opt/homebrew/sbin:$PATH"
 
-alias plist="proto list --aliases"
-alias psearch="proto list-remote --aliases"
+alias plist="proto versions --installed --aliases"
+alias psearch="proto versions --aliases"
 alias pupgrade="proto upgrade"
 function pinstall() {
   if [[ $# -eq 1 ]]; then
@@ -26,9 +26,9 @@ function puse() {
   if [[ $# -eq 1 ]]; then
     echo -e "\033[0;33mWarning: No version provided. Using 'latest' as version tag.\033[0m"
     echo
-    proto pin --resolve --global $1 latest
+    proto pin --resolve --to global $1 latest
   else
-    proto pin --resolve --global $1 $2
+    proto pin --resolve --to global $1 $2
   fi
 }
 function poutdated() {

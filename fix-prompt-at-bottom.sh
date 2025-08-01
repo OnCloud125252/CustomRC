@@ -1,4 +1,4 @@
-alias _clear=$(which clear)
+alias _clear="/usr/bin/clear"
 clear() {
   _clear
   printf '\n%.0s' {1..$(($(tput lines) - 2))}

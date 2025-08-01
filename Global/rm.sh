@@ -1,3 +1,1 @@
-alias _rm=$(which rm)
-alias rm="trash"
-
+alias rm='echo -e "\n⚠️  SAFETY ALERT: rm command has been disabled to prevent accidental data loss.\n\nAlternatives:\n  • Use trash command: trash file.txt (recoverable)\n  • Override this protection: \\\\rm file.txt (permanent deletion)\n"'
