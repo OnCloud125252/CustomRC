@@ -1,7 +1,7 @@
 eval "$(fzf --zsh)"
 source <(fzf --zsh)
 
-export FZF_COMPLETION_TRIGGER='`'
+export FZF_COMPLETION_TRIGGER='**'
 export FZF_COMPLETION_OPTS='--border'
 
 export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix"
