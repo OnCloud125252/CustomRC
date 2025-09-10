@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 CHECKMARK='\xE2\x9C\x94'
 ROCKET='\xF0\x9F\x9A\x80'
 CROSSMARK='\xE2\x9C\x98'
-HOURGLASS='\xE2\x8C\x9B'
+WAIT='\xE2\x8C\x9B'
 WARNING='\xE2\x9A\xA0'
 
 CURRENT_PATH=$(dirname "$0")
@@ -26,7 +26,7 @@ CUSTOMRC_IGNORED_COUNT=0
 CUSTOMRC_SLOW_THRESHOLD_MS=50
 
 if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  echo -e "${ROCKET} Customrc initializing..."
+  echo -e "${WAIT} Customrc initializing..."
 fi
 
 CUSTOMRC_GLOBAL_IGNORE_LIST=(
@@ -128,7 +128,7 @@ fi
 CUSTOMRC_TOTAL_DURATION=$(get_duration_ms $CUSTOMRC_START_TIME)
 
 if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  echo -e "${HOURGLASS} Initialization complete: ${GREEN}${CUSTOMRC_LOADED_COUNT} loaded${NC}, ${RED}${CUSTOMRC_IGNORED_COUNT} ignored${NC}, took ${CUSTOMRC_TOTAL_DURATION}ms"
+  echo -e "${ROCKET} Initialization complete: ${GREEN}${CUSTOMRC_LOADED_COUNT} loaded${NC}, ${RED}${CUSTOMRC_IGNORED_COUNT} ignored${NC}, took ${CUSTOMRC_TOTAL_DURATION}ms"
 fi
 
 
