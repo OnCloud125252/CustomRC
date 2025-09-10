@@ -1,15 +1,36 @@
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+NC='\033[0m' # No Color
+
+# Symbols
+CHECKMARK='\xE2\x9C\x94'
+ROCKET='\xF0\x9F\x9A\x80'
+CROSSMARK='\xE2\x9C\x98'
+HOURGLASS='\xE2\x8C\x9B'
+
 CURRENT_PATH=$(dirname "$0")
 
-CUSTOMRC_SILENT_OUTPUT=false
+CUSTOMRC_SILENT_OUTPUT=true
+
+if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
+  echo -e "${ROCKET} Customrc initializing..."
+fi
 
 CUSTOMRC_GLOBAL_IGNORE_LIST=(
   "zoxide.sh"
   "podman.sh"
+  "python-virtual-environment.sh"
+  "nvm.sh"
 )
 CUSTOMRC_Darwin_IGNORE_LIST=(
   "cursor.sh"
   "iterm.sh"
   "jankyborders.sh"
+  "dnslookup.sh"
 )
 CUSTOMRC_Linux_IGNORE_LIST=(
 )
@@ -31,9 +52,12 @@ for file in $CUSTOMRC_GLOBAL_RC_PATH/*; do
   if ! is_ignored $fileName $CUSTOMRC_GLOBAL_IGNORE_LIST; then
     if [[ -f $file ]]; then
       source "$file"
+      if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
+        echo -e "  ${GREEN}${CHECKMARK}${NC} loaded:  ${BLUE}$fileName ${MAGENTA}[global]${NC}"
+      fi
     fi
   elif [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-    echo "Customrc: ignoring $fileName (global)"
+    echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[global]${NC}"
   fi
 done
 
@@ -51,16 +75,19 @@ if [[ $OS_NAME == "Darwin" || $OS_NAME == "Linux" ]]; then
     if ! is_ignored $fileName $CUSTOMRC_OS_IGNORE_LIST; then
       if [[ -f $file ]]; then
         source "$file"
+        if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
+          echo -e "  ${GREEN}${CHECKMARK}${NC} loaded:  ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC}"
+        fi
       fi
     elif [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-      echo "Customrc: ignoring $fileName"
+      echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC}"
     fi
   done
 else
-  echo "Customrc: unsupported OS $OS_NAME, skipping OS-specific rc files"
+  echo -e "${CROSSMARK}${YELLOW}unsupported OS ${BLUE}$OS_NAME${YELLOW}, skipping OS-specific rc files${NC}"
 fi
 
-if [[ -f "$CURRENT_PATH/fix-prompt-at-bottom.sh" ]]; then
+if [[ -f "$CURRENT_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" ]]; then
   source "$CURRENT_PATH/fix-prompt-at-bottom.sh"
 fi
 
