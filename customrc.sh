@@ -17,16 +17,16 @@ WARNING='\xE2\x9A\xA0'
 
 CURRENT_PATH=$(dirname "$0")
 
-CUSTOMRC_SILENT_OUTPUT=false
+CUSTOMRC_SILENT_OUTPUT=true
 
 # Initialize timing and counters
 CUSTOMRC_START_TIME=$(date +%s%N)
 CUSTOMRC_LOADED_COUNT=0
 CUSTOMRC_IGNORED_COUNT=0
-CUSTOMRC_SLOW_THRESHOLD_MS=50
+CUSTOMRC_SLOW_THRESHOLD_MS=100
 
 if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  echo -e "${WAIT} Customrc initializing..."
+  echo -e "${ROCKET} Customrc initializing..."
 fi
 
 CUSTOMRC_GLOBAL_IGNORE_LIST=(
@@ -63,31 +63,47 @@ get_duration_ms() {
   echo $(( (end_time - start_time) / 1000000 ))
 }
 
-CUSTOMRC_GLOBAL_RC_PATH="$CUSTOMRC_PATH/Global"
-for file in $CUSTOMRC_GLOBAL_RC_PATH/*; do
-  fileName=$(basename "$file")
-  if ! is_ignored $fileName $CUSTOMRC_GLOBAL_IGNORE_LIST; then
-    if [[ -f $file ]]; then
-      file_start_time=$(date +%s%N)
-      source "$file"
-      ((CUSTOMRC_LOADED_COUNT++))
-      if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-        duration_ms=$(get_duration_ms $file_start_time)
-        if [[ $duration_ms -gt $CUSTOMRC_SLOW_THRESHOLD_MS ]]; then
-          echo -e "  ${YELLOW}${CHECKMARK}${NC} loaded:  ${BLUE}$fileName ${MAGENTA}[global]${NC} (${YELLOW}${duration_ms}ms${NC})"
-        else
-          echo -e "  ${GREEN}${CHECKMARK}${NC} loaded:  ${BLUE}$fileName ${MAGENTA}[global]${NC} (${duration_ms}ms)"
-        fi
-      fi
-    fi
-  else
-    ((CUSTOMRC_IGNORED_COUNT++))
+# Create temporary file for combined content
+TEMP_COMBINED_RC=$(mktemp)
+trap "rm -f $TEMP_COMBINED_RC" EXIT
+
+# Function to add file content to combined script
+add_file_to_combined() {
+  local file="$1"
+  local fileName="$2"
+  local category="$3"
+  
+  if [[ -f "$file" ]]; then
+    echo "# === Start of $fileName [$category] ===" >> "$TEMP_COMBINED_RC"
+    cat "$file" >> "$TEMP_COMBINED_RC"
+    echo "" >> "$TEMP_COMBINED_RC"
+    echo "# === End of $fileName [$category] ===" >> "$TEMP_COMBINED_RC"
+    echo "" >> "$TEMP_COMBINED_RC"
+    ((CUSTOMRC_LOADED_COUNT++))
+    
     if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-      echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[global]${NC}"
+      echo -e "  ${GREEN}${CHECKMARK}${NC} queued:  ${BLUE}$fileName ${MAGENTA}[$category]${NC}"
     fi
   fi
-done
+}
 
+# Process Global files
+CUSTOMRC_GLOBAL_RC_PATH="$CUSTOMRC_PATH/Global"
+if [[ -d "$CUSTOMRC_GLOBAL_RC_PATH" ]]; then
+  for file in "$CUSTOMRC_GLOBAL_RC_PATH"/*; do
+    fileName=$(basename "$file")
+    if ! is_ignored "$fileName" "${CUSTOMRC_GLOBAL_IGNORE_LIST[@]}"; then
+      add_file_to_combined "$file" "$fileName" "global"
+    else
+      ((CUSTOMRC_IGNORED_COUNT++))
+      if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
+        echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[global]${NC}"
+      fi
+    fi
+  done
+fi
+
+# Process OS-specific files
 OS_NAME=$(uname)
 if [[ $OS_NAME == "Darwin" || $OS_NAME == "Linux" ]]; then
   if [[ $OS_NAME == "Darwin" ]]; then
@@ -97,31 +113,40 @@ if [[ $OS_NAME == "Darwin" || $OS_NAME == "Linux" ]]; then
   fi
 
   CUSTOMRC_RC_PATH="$CUSTOMRC_PATH/$OS_NAME"
-  for file in $CUSTOMRC_RC_PATH/*; do
-    fileName=$(basename "$file")
-    if ! is_ignored $fileName $CUSTOMRC_OS_IGNORE_LIST; then
-      if [[ -f $file ]]; then
-        file_start_time=$(date +%s%N)
-        source "$file"
-        ((CUSTOMRC_LOADED_COUNT++))
+  if [[ -d "$CUSTOMRC_RC_PATH" ]]; then
+    for file in "$CUSTOMRC_RC_PATH"/*; do
+      fileName=$(basename "$file")
+      if ! is_ignored "$fileName" "${CUSTOMRC_OS_IGNORE_LIST[@]}"; then
+        add_file_to_combined "$file" "$fileName" "$OS_NAME"
+      else
+        ((CUSTOMRC_IGNORED_COUNT++))
         if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-          duration_ms=$(get_duration_ms $file_start_time)
-          if [[ $duration_ms -gt $CUSTOMRC_SLOW_THRESHOLD_MS ]]; then
-            echo -e "  ${GREEN}${CHECKMARK}${NC} loaded:  ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC} (${YELLOW}${duration_ms}ms${NC})"
-          else
-            echo -e "  ${GREEN}${CHECKMARK}${NC} loaded:  ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC} (${duration_ms}ms)"
-          fi
+          echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC}"
         fi
       fi
-    else
-      ((CUSTOMRC_IGNORED_COUNT++))
-      if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-        echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC}"
-      fi
-    fi
-  done
+    done
+  fi
 else
   echo -e "${CROSSMARK}${YELLOW}unsupported OS ${BLUE}$OS_NAME${YELLOW}, skipping OS-specific rc files${NC}"
+fi
+
+# Source the combined file if it has content
+if [[ -s "$TEMP_COMBINED_RC" ]]; then
+  if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
+    echo -e "${WAIT} Sourcing combined configuration..."
+  fi
+  
+  source_start_time=$(date +%s%N)
+  source "$TEMP_COMBINED_RC"
+  source_duration=$(get_duration_ms $source_start_time)
+  
+  # if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
+  #   if [[ $source_duration -gt $CUSTOMRC_SLOW_THRESHOLD_MS ]]; then
+  #     echo -e "${GREEN}${CHECKMARK}${NC} sourced: ${GREEN}combined configuration${NC} (${YELLOW}${source_duration}ms${NC})"
+  #   else
+  #     echo -e "${GREEN}${CHECKMARK}${NC} sourced: ${GREEN}combined configuration${NC} (${source_duration}ms)"
+  #   fi
+  # fi
 fi
 
 # Calculate total duration and display summary
@@ -131,10 +156,11 @@ if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
   echo -e "${ROCKET} Initialization complete: ${GREEN}${CUSTOMRC_LOADED_COUNT} loaded${NC}, ${RED}${CUSTOMRC_IGNORED_COUNT} ignored${NC}, took ${CUSTOMRC_TOTAL_DURATION}ms"
 fi
 
-
+# Apply prompt fix if needed
 if [[ -f "$CURRENT_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" ]]; then
   source "$CURRENT_PATH/fix-prompt-at-bottom.sh"
 fi
 
+# Clean up variables
 fileName=
 file=
