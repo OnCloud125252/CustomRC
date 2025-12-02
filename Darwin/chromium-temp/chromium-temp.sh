@@ -109,14 +109,32 @@ if [[ ! -f "$CHROMIUM_PATH" ]]; then
     exit 1
 fi
 
-# Generate random temporary ID
-TMP_ID=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)
-PROFILE_DIR="$TEMP_BASE_DIR/$TMP_ID"
+# Ensure base directory exists with proper permissions
+mkdir -p "$TEMP_BASE_DIR"
+chmod 700 "$TEMP_BASE_DIR"
 
-# Create the temporary directory
-mkdir -p "$PROFILE_DIR"
+# Generate unique temporary directory with collision avoidance
+# Using 10 characters for better entropy (36^10 = 3.66 quadrillion combinations)
+MAX_ATTEMPTS=100
+attempt=0
 
-echo -e "${GREEN}${CHECK}${NC} ${GREEN}Temporary profile created:${NC} ${CYAN}${BOLD}$PROFILE_DIR${NC}"
+while [[ $attempt -lt $MAX_ATTEMPTS ]]; do
+    TMP_ID=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 10)
+    PROFILE_DIR="$TEMP_BASE_DIR/$TMP_ID"
+
+    # Atomic directory creation - fails if exists
+    if mkdir -m 700 "$PROFILE_DIR" 2>/dev/null; then
+        echo -e "${GREEN}${CHECK}${NC} ${GREEN}Temporary profile created:${NC} ${CYAN}${BOLD}$PROFILE_DIR${NC}"
+        break
+    fi
+
+    ((attempt++))
+done
+
+if [[ $attempt -eq $MAX_ATTEMPTS ]]; then
+    echo -e "${RED}${CROSS}${NC} ${RED}Error: Failed to create unique profile directory after $MAX_ATTEMPTS attempts${NC}"
+    exit 1
+fi
 
 if [[ $AUTO_CLEANUP -eq 1 ]]; then
     trap cleanup EXIT
@@ -128,7 +146,17 @@ echo -e "${PURPLE}🚀${NC} ${PURPLE}Launching Chromium with temporary profile..
 print_divider "$PURPLE"
 
 # Credential from LINUX Chromium Browser
-GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k" GOOGLE_DEFAULT_CLIENT_ID="811574891467.apps.googleusercontent.com" GOOGLE_DEFAULT_CLIENT_SECRET="kdloedMFGdGla2P1zacGjAQh" "$CHROMIUM_PATH" --user-data-dir="$PROFILE_DIR" --new-window "${CHROMIUM_ARGS[@]}"
+GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k" \
+GOOGLE_DEFAULT_CLIENT_ID="811574891467.apps.googleusercontent.com" \
+GOOGLE_DEFAULT_CLIENT_SECRET="kdloedMFGdGla2P1zacGjAQh" \
+"$CHROMIUM_PATH" \
+--user-data-dir="$PROFILE_DIR" \
+--disable-fre \
+--no-first-run \
+--no-default-browser-check \
+--new-window \
+"${CHROMIUM_ARGS[@]}"
+
 # GOOGLE_API_KEY="no" GOOGLE_DEFAULT_CLIENT_ID="no" GOOGLE_DEFAULT_CLIENT_SECRET="no" "$CHROMIUM_PATH" --user-data-dir="$PROFILE_DIR" --new-window "${CHROMIUM_ARGS[@]}"
 
 print_divider "$PURPLE"
