@@ -146,6 +146,8 @@ echo -e "${PURPLE}🚀${NC} ${PURPLE}Launching Chromium with temporary profile..
 print_divider "$PURPLE"
 
 # Credential from LINUX Chromium Browser
+xattr -cr /Applications/Chromium.app
+
 GOOGLE_API_KEY="AIzaSyCkfPOPZXDKNn8hhgu3JrA62wIgC93d44k" \
 GOOGLE_DEFAULT_CLIENT_ID="811574891467.apps.googleusercontent.com" \
 GOOGLE_DEFAULT_CLIENT_SECRET="kdloedMFGdGla2P1zacGjAQh" \
