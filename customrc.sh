@@ -75,8 +75,24 @@ add_file_to_combined() {
   
   if [[ -f "$file" ]]; then
     echo "# === Start of $fileName [$category] ===" >> "$TEMP_COMBINED_RC"
+    # Inject start time capture
+    echo "_file_start_time=\$(date +%s%N)" >> "$TEMP_COMBINED_RC"
+
+    # Add file content
     cat "$file" >> "$TEMP_COMBINED_RC"
     echo "" >> "$TEMP_COMBINED_RC"
+
+    # Inject duration calculation and reporting
+    # We use HEREDOC to handle variable expansion:
+    # $fileName, $category -> expanded NOW (by customrc.sh)
+    # \$_file_start_time, \$CUSTOMRC_SILENT_OUTPUT -> literal in file (expanded LATER by generated script)
+    cat <<EOF >> "$TEMP_COMBINED_RC"
+_file_duration=\$(get_duration_ms \$_file_start_time)
+if [[ "\$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
+  echo -e "  \${GREEN}\${CHECKMARK}\${NC} loaded:  \${BLUE}$fileName \${MAGENTA}[$category]\${NC} (\${YELLOW}\${_file_duration}ms\${NC})"
+fi
+EOF
+
     echo "# === End of $fileName [$category] ===" >> "$TEMP_COMBINED_RC"
     echo "" >> "$TEMP_COMBINED_RC"
     ((CUSTOMRC_LOADED_COUNT++))
