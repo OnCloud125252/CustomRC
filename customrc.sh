@@ -3,35 +3,17 @@
 CURRENT_PATH=$(dirname "$0")
 CUSTOMRC_RC_MODULES_PATH="${CURRENT_PATH}/rc-modules"
 CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
-CUSTOMRC_SILENT_OUTPUT=${CUSTOMRC_SILENT_OUTPUT:-false}
-CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM=${CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM:-false}
 
 CUSTOMRC_START_TIME=$(date +%s%N)
 CUSTOMRC_LOADED_COUNT=0
 CUSTOMRC_IGNORED_COUNT=0
 
+source "$CURRENT_PATH/configs.sh"
 source "$CUSTOMRC_HELPERS_PATH/styles.sh"
 source "$CUSTOMRC_HELPERS_PATH/logging.sh"
 source "$CUSTOMRC_HELPERS_PATH/timing.sh"
 source "$CUSTOMRC_HELPERS_PATH/loader.sh"
 
-# Global ignore list (applies to all platforms)
-CUSTOMRC_GLOBAL_IGNORE_LIST=(
-  "zoxide.sh"
-  "podman.sh"
-  "python-virtual-environment.sh"
-  "nvm.sh"
-  "thefuck.sh"
-)
-
-# Platform-specific ignore lists
-CUSTOMRC_DARWIN_IGNORE_LIST=(
-  "cursor.sh"
-  "iterm.sh"
-  "jankyborders.sh"
-  "dnslookup.sh"
-)
-CUSTOMRC_LINUX_IGNORE_LIST=()
 
 # Create temporary file for combined configuration
 TEMP_COMBINED_RC=$(mktemp)
