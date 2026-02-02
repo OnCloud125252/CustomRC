@@ -1,30 +1,8 @@
 #!/bin/bash
 
-# =============================================================================
-# Configuration & Styles
-# =============================================================================
-
-# Basic Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-WHITE='\033[0;37m'
-
-# Text Styles
-BOLD='\033[1m'
-NC='\033[0m' # No Color
-
-# Symbols
-CHECK="[✓]"
-CROSS="[✗]"
-WARN="[!]"
-INFO="[i]"
-ROCKET='\xF0\x9F\x9A\x80'
-
 CURRENT_PATH=$(dirname "$0")
+CUSTOMRC_RC_MODULES_PATH="${CURRENT_PATH}/rc-modules"
+CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 CUSTOMRC_SILENT_OUTPUT=${CUSTOMRC_SILENT_OUTPUT:-false}
 
 # Initialize timing and counters
@@ -32,6 +10,8 @@ CUSTOMRC_START_TIME=$(date +%s%N)
 CUSTOMRC_LOADED_COUNT=0
 CUSTOMRC_IGNORED_COUNT=0
 CUSTOMRC_SLOW_THRESHOLD_MS=100
+
+source "$CUSTOMRC_HELPERS_PATH/styles.sh"
 
 # Function to print a full-width line
 print_divider() {
@@ -42,11 +22,11 @@ print_divider() {
 }
 
 if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  echo -e "${PURPLE}${ROCKET}${NC} ${PURPLE}Launching Customrc...${NC}"
+  echo -e "${CYAN}${INFO}${NC} ${WHITE}Initializing Customrc...${NC}"
   print_divider "$PURPLE" "customrc"
 fi
 
-CUSTOMRC_GLOBAL_IGNORE_LIST=(
+CUSTOMRC_Global_IGNORE_LIST=(
   "zoxide.sh"
   "podman.sh"
   "python-virtual-environment.sh"
@@ -80,6 +60,30 @@ get_duration_ms() {
   echo $(( (end_time - start_time) / 1000000 ))
 }
 
+# Function to get color based on duration
+get_duration_color() {
+  local duration=$1
+  if (( duration < 10 )); then
+    echo "$GREEN"
+  elif (( duration < 50 )); then
+    echo "$YELLOW"
+  else
+    echo "$RED"
+  fi
+}
+
+# Function to get color based on total duration
+get_total_duration_color() {
+  local duration=$1
+  if (( duration < 1000 )); then
+    echo "$GREEN"
+  elif (( duration < 2000 )); then
+    echo "$YELLOW"
+  else
+    echo "$RED"
+  fi
+}
+
 # Create temporary file for combined content
 TEMP_COMBINED_RC=$(mktemp)
 trap "rm -f $TEMP_COMBINED_RC" EXIT
@@ -106,7 +110,8 @@ add_file_to_combined() {
     cat <<EOF >> "$TEMP_COMBINED_RC"
 _file_duration=\$(get_duration_ms \$_file_start_time)
 if [[ "\$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  echo -e "${GREEN}${CHECK}${NC} ${WHITE}Loaded:${NC} ${BLUE}$fileName ${MAGENTA}[$category]${NC} (${YELLOW}\${_file_duration}ms${NC})"
+  _duration_color=\$(get_duration_color \$_file_duration)
+  echo -e "${GREEN}${CHECK}${NC} ${WHITE}Loaded:${NC} ${BLUE}$fileName ${PURPLE}[$category]${NC} (\${_duration_color}\${_file_duration}ms${NC})"
 fi
 EOF
 
@@ -117,16 +122,16 @@ EOF
 }
 
 # Process Global files
-CUSTOMRC_GLOBAL_RC_PATH="$CUSTOMRC_PATH/Global"
+CUSTOMRC_GLOBAL_RC_PATH="$CUSTOMRC_RC_MODULES_PATH/Global"
 if [[ -d "$CUSTOMRC_GLOBAL_RC_PATH" ]]; then
   for file in "$CUSTOMRC_GLOBAL_RC_PATH"/*; do
     fileName=$(basename "$file")
-    if ! is_ignored "$fileName" "${CUSTOMRC_GLOBAL_IGNORE_LIST[@]}"; then
-      add_file_to_combined "$file" "$fileName" "global"
+    if ! is_ignored "$fileName" "${CUSTOMRC_Global_IGNORE_LIST[@]}"; then
+      add_file_to_combined "$file" "$fileName" "Global"
     else
       ((CUSTOMRC_IGNORED_COUNT++))
       if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-        echo -e "${RED}${CROSS}${NC} ${WHITE}Ignored:${NC} ${BLUE}$fileName ${MAGENTA}[global]${NC}"
+        echo -e "${RED}${CROSS}${NC} ${WHITE}Ignored:${NC} ${BLUE}$fileName ${PURPLE}[Global]${NC}"
       fi
     fi
   done
@@ -141,7 +146,7 @@ if [[ $OS_NAME == "Darwin" || $OS_NAME == "Linux" ]]; then
     CUSTOMRC_OS_IGNORE_LIST=("${CUSTOMRC_Linux_IGNORE_LIST[@]}")
   fi
 
-  CUSTOMRC_RC_PATH="$CUSTOMRC_PATH/$OS_NAME"
+  CUSTOMRC_RC_PATH="$CUSTOMRC_RC_MODULES_PATH/$OS_NAME"
   if [[ -d "$CUSTOMRC_RC_PATH" ]]; then
     for file in "$CUSTOMRC_RC_PATH"/*; do
       fileName=$(basename "$file")
@@ -150,7 +155,7 @@ if [[ $OS_NAME == "Darwin" || $OS_NAME == "Linux" ]]; then
       else
         ((CUSTOMRC_IGNORED_COUNT++))
         if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-          echo -e "${RED}${CROSS}${NC} ${WHITE}Ignored:${NC} ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC}"
+          echo -e "${RED}${CROSS}${NC} ${WHITE}Ignored:${NC} ${BLUE}$fileName ${PURPLE}[$OS_NAME]${NC}"
         fi
       fi
     done
@@ -178,13 +183,14 @@ if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
   echo -e "${CYAN}${INFO}${NC} ${WHITE}Initialization complete${NC}"
   echo -e "    ${GREEN}${CHECK}${NC} ${WHITE}Loaded: ${GREEN}${CUSTOMRC_LOADED_COUNT}${NC}"
   echo -e "    ${RED}${CROSS}${NC} ${WHITE}Ignored: ${RED}${CUSTOMRC_IGNORED_COUNT}${NC}"
-  echo -e "    ${YELLOW}${WARN}${NC} ${WHITE}Duration: ${YELLOW}${CUSTOMRC_TOTAL_DURATION}ms${NC}"
+  TOTAL_DURATION_COLOR=$(get_total_duration_color "$CUSTOMRC_TOTAL_DURATION")
+  echo -e "    ${YELLOW}${WARN}${NC} ${WHITE}Duration: ${TOTAL_DURATION_COLOR}${CUSTOMRC_TOTAL_DURATION}ms${NC}"
   echo ""
 fi
 
 # Apply prompt fix if needed
-if [[ -f "$CURRENT_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" ]]; then
-  source "$CURRENT_PATH/fix-prompt-at-bottom.sh"
+if [[ -f "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" ]]; then
+  source "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh"
 fi
 
 # Clean up variables to prevent pollution
