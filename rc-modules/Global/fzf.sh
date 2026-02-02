@@ -32,5 +32,4 @@ _fzf_comprun() {
   esac
 }
 
-# source "$(dirname "$0")/fzf-git/fzf-git.sh"
-source "$HOME/.customrc/Global/fzf-git/fzf-git.sh"
+source "$HOME/.customrc/rc-modules/Global/fzf-git/fzf-git.sh"
