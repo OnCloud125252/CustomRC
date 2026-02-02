@@ -4,7 +4,7 @@ CURRENT_PATH=$(dirname "$0")
 CUSTOMRC_RC_MODULES_PATH="${CURRENT_PATH}/rc-modules"
 CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 CUSTOMRC_SILENT_OUTPUT=${CUSTOMRC_SILENT_OUTPUT:-false}
-CUSTOMRC_DISABLE_PROMPT_FIX=true
+CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM=${CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM:-false}
 
 CUSTOMRC_START_TIME=$(date +%s%N)
 CUSTOMRC_LOADED_COUNT=0
@@ -191,7 +191,7 @@ if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
 fi
 
 # Apply prompt positioning fix for non-Warp terminals (unless disabled)
-if [[ -f "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" && "$CUSTOMRC_DISABLE_PROMPT_FIX" != "true" ]]; then
+if [[ -f "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" && "$CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM" != "true" ]]; then
   source "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh"
 fi
 
