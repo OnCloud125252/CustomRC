@@ -20,7 +20,7 @@ TEMP_COMBINED_RC=$(mktemp)
 trap 'rm -f "$TEMP_COMBINED_RC"' EXIT
 
 log_message "${INFO} ${WHITE}Initializing Customrc...${NC}"
-[[ "$CUSTOMRC_SILENT_OUTPUT" != true ]] && print_divider "$PURPLE" "customrc"
+print_divider "$PURPLE" "customrc"
 
 # Process Global RC files
 process_rc_directory \
@@ -44,7 +44,7 @@ case "$OS_NAME" in
       "${CUSTOMRC_LINUX_IGNORE_LIST[@]}"
     ;;
   *)
-    echo -e "${CROSS}${YELLOW}Unsupported OS ${BLUE}$OS_NAME${YELLOW}, skipping OS-specific rc files${NC}"
+    log_message "${CROSS}${YELLOW}Unsupported OS ${BLUE}$OS_NAME${YELLOW}, skipping OS-specific rc files${NC}"
     ;;
 esac
 
@@ -56,16 +56,12 @@ fi
 
 # Display initialization summary
 CUSTOMRC_TOTAL_DURATION=$(get_duration_ms $CUSTOMRC_START_TIME)
-
-if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  print_divider "$PURPLE" "customrc"
-  echo -e "${INFO} ${WHITE}Initialization complete${NC}"
-  echo -e "    ${CHECK} ${WHITE}Loaded: ${GREEN}${CUSTOMRC_LOADED_COUNT}${NC}"
-  echo -e "    ${CROSS} ${WHITE}Ignored: ${RED}${CUSTOMRC_IGNORED_COUNT}${NC}"
-  TOTAL_DURATION_COLOR=$(get_total_duration_color "$CUSTOMRC_TOTAL_DURATION")
-  echo -e "    ${WARN} ${WHITE}Duration: ${TOTAL_DURATION_COLOR}${CUSTOMRC_TOTAL_DURATION}ms${NC}"
-  echo ""
-fi
+print_divider "$PURPLE" "customrc"
+log_message "${INFO} ${WHITE}Initialization complete${NC}"
+log_message "    ${CHECK} ${WHITE}Loaded: ${GREEN}${CUSTOMRC_LOADED_COUNT}${NC}"
+log_message "    ${CROSS} ${WHITE}Ignored: ${RED}${CUSTOMRC_IGNORED_COUNT}${NC}"
+TOTAL_DURATION_COLOR=$(get_total_duration_color "$CUSTOMRC_TOTAL_DURATION")
+log_message "    ${WARN} ${WHITE}Duration: ${TOTAL_DURATION_COLOR}${CUSTOMRC_TOTAL_DURATION}ms${NC}"
 
 # Apply prompt positioning fix for non-Warp terminals (unless disabled)
 if [[ -f "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" && "$CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM" != "true" ]]; then
@@ -78,3 +74,6 @@ unset CHECK CROSS WARN INFO
 unset print_divider is_ignored add_file_to_combined get_duration_ms
 unset get_duration_color get_total_duration_color log_message process_rc_directory
 unset filename filepath
+unset CURRENT_PATH CUSTOMRC_RC_MODULES_PATH CUSTOMRC_HELPERS_PATH
+unset CUSTOMRC_START_TIME CUSTOMRC_LOADED_COUNT CUSTOMRC_IGNORED_COUNT
+unset CUSTOMRC_TOTAL_DURATION TEMP_COMBINED_RC OS_NAME TOTAL_DURATION_COLOR
