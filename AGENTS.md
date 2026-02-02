@@ -10,6 +10,7 @@ CustomRC breaks down monolithic shell configuration files (bashrc/zshrc) into ma
 
 ## Architecture
 - **Modular Design**: Functionality is split into specific files in `rc-modules/`.
+- **Helpers**: Core logic (logging, timing, styles) is modularized in `helpers/`.
 - **Platform Specifics**: `Darwin/` for macOS, `Linux/` for Linux, `Global/` for shared.
 
 ## Development Workflow
@@ -28,4 +29,5 @@ CustomRC breaks down monolithic shell configuration files (bashrc/zshrc) into ma
 
 ## Key Files
 - `customrc.sh`: Main entry point.
+- `helpers/`: Utility scripts (logging, loader, styles, timing).
 - `README.md`: Project documentation.
