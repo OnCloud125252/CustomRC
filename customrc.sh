@@ -1,166 +1,80 @@
 #!/bin/bash
 
-# Colors
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-NC='\033[0m' # No Color
-
-# Symbols
-CHECKMARK='\xE2\x9C\x94'
-ROCKET='\xF0\x9F\x9A\x80'
-CROSSMARK='\xE2\x9C\x98'
-WAIT='\xE2\x8C\x9B'
-WARNING='\xE2\x9A\xA0'
-
 CURRENT_PATH=$(dirname "$0")
+CUSTOMRC_RC_MODULES_PATH="${CURRENT_PATH}/rc-modules"
+CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 
-CUSTOMRC_SILENT_OUTPUT=true
-
-# Initialize timing and counters
 CUSTOMRC_START_TIME=$(date +%s%N)
 CUSTOMRC_LOADED_COUNT=0
 CUSTOMRC_IGNORED_COUNT=0
-CUSTOMRC_SLOW_THRESHOLD_MS=100
 
-if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  echo -e "${ROCKET} Customrc initializing..."
-fi
+source "$CURRENT_PATH/configs.sh"
+source "$CUSTOMRC_HELPERS_PATH/styles.sh"
+source "$CUSTOMRC_HELPERS_PATH/logging.sh"
+source "$CUSTOMRC_HELPERS_PATH/timing.sh"
+source "$CUSTOMRC_HELPERS_PATH/loader.sh"
 
-CUSTOMRC_GLOBAL_IGNORE_LIST=(
-  "zoxide.sh"
-  "podman.sh"
-  "python-virtual-environment.sh"
-  "nvm.sh"
-  "thefuck.sh"
-)
-CUSTOMRC_Darwin_IGNORE_LIST=(
-  "cursor.sh"
-  "iterm.sh"
-  "jankyborders.sh"
-  "dnslookup.sh"
-)
-CUSTOMRC_Linux_IGNORE_LIST=(
-)
 
-is_ignored() {
-  local item="$1"
-  local ignoreList=("${@:2}")
-  for ignore in "${ignoreList[@]}"; do
-    if [[ "$ignore" == "$item" ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
-# Function to calculate duration in milliseconds
-get_duration_ms() {
-  local start_time=$1
-  local end_time=$(date +%s%N)
-  echo $(( (end_time - start_time) / 1000000 ))
-}
-
-# Create temporary file for combined content
+# Create temporary file for combined configuration
 TEMP_COMBINED_RC=$(mktemp)
-trap "rm -f $TEMP_COMBINED_RC" EXIT
+trap 'rm -f "$TEMP_COMBINED_RC"' EXIT
 
-# Function to add file content to combined script
-add_file_to_combined() {
-  local file="$1"
-  local fileName="$2"
-  local category="$3"
-  
-  if [[ -f "$file" ]]; then
-    echo "# === Start of $fileName [$category] ===" >> "$TEMP_COMBINED_RC"
-    cat "$file" >> "$TEMP_COMBINED_RC"
-    echo "" >> "$TEMP_COMBINED_RC"
-    echo "# === End of $fileName [$category] ===" >> "$TEMP_COMBINED_RC"
-    echo "" >> "$TEMP_COMBINED_RC"
-    ((CUSTOMRC_LOADED_COUNT++))
-    
-    if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-      echo -e "  ${GREEN}${CHECKMARK}${NC} queued:  ${BLUE}$fileName ${MAGENTA}[$category]${NC}"
-    fi
-  fi
-}
+log_message "${INFO} ${WHITE}Initializing Customrc...${NC}"
+[[ "$CUSTOMRC_SILENT_OUTPUT" != true ]] && print_divider "$PURPLE" "customrc"
 
-# Process Global files
-CUSTOMRC_GLOBAL_RC_PATH="$CUSTOMRC_PATH/Global"
-if [[ -d "$CUSTOMRC_GLOBAL_RC_PATH" ]]; then
-  for file in "$CUSTOMRC_GLOBAL_RC_PATH"/*; do
-    fileName=$(basename "$file")
-    if ! is_ignored "$fileName" "${CUSTOMRC_GLOBAL_IGNORE_LIST[@]}"; then
-      add_file_to_combined "$file" "$fileName" "global"
-    else
-      ((CUSTOMRC_IGNORED_COUNT++))
-      if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-        echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[global]${NC}"
-      fi
-    fi
-  done
-fi
+# Process Global RC files
+process_rc_directory \
+  "$CUSTOMRC_RC_MODULES_PATH/Global" \
+  "Global" \
+  "${CUSTOMRC_GLOBAL_IGNORE_LIST[@]}"
 
-# Process OS-specific files
+# Process OS-specific RC files
 OS_NAME=$(uname)
-if [[ $OS_NAME == "Darwin" || $OS_NAME == "Linux" ]]; then
-  if [[ $OS_NAME == "Darwin" ]]; then
-    CUSTOMRC_OS_IGNORE_LIST=("${CUSTOMRC_Darwin_IGNORE_LIST[@]}")
-  elif [[ $OS_NAME == "Linux" ]]; then
-    CUSTOMRC_OS_IGNORE_LIST=("${CUSTOMRC_Linux_IGNORE_LIST[@]}")
-  fi
+case "$OS_NAME" in
+  Darwin)
+    process_rc_directory \
+      "$CUSTOMRC_RC_MODULES_PATH/Darwin" \
+      "Darwin" \
+      "${CUSTOMRC_DARWIN_IGNORE_LIST[@]}"
+    ;;
+  Linux)
+    process_rc_directory \
+      "$CUSTOMRC_RC_MODULES_PATH/Linux" \
+      "Linux" \
+      "${CUSTOMRC_LINUX_IGNORE_LIST[@]}"
+    ;;
+  *)
+    echo -e "${CROSS}${YELLOW}Unsupported OS ${BLUE}$OS_NAME${YELLOW}, skipping OS-specific rc files${NC}"
+    ;;
+esac
 
-  CUSTOMRC_RC_PATH="$CUSTOMRC_PATH/$OS_NAME"
-  if [[ -d "$CUSTOMRC_RC_PATH" ]]; then
-    for file in "$CUSTOMRC_RC_PATH"/*; do
-      fileName=$(basename "$file")
-      if ! is_ignored "$fileName" "${CUSTOMRC_OS_IGNORE_LIST[@]}"; then
-        add_file_to_combined "$file" "$fileName" "$OS_NAME"
-      else
-        ((CUSTOMRC_IGNORED_COUNT++))
-        if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-          echo -e "  ${RED}${CROSSMARK}${NC} ignored: ${BLUE}$fileName ${MAGENTA}[$OS_NAME]${NC}"
-        fi
-      fi
-    done
-  fi
-else
-  echo -e "${CROSSMARK}${YELLOW}unsupported OS ${BLUE}$OS_NAME${YELLOW}, skipping OS-specific rc files${NC}"
-fi
-
-# Source the combined file if it has content
+# Source the combined configuration file
 if [[ -s "$TEMP_COMBINED_RC" ]]; then
-  if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-    echo -e "${WAIT} Sourcing combined configuration..."
-  fi
-  
-  source_start_time=$(date +%s%N)
+  log_message "${INFO} ${CYAN}Sourcing combined configuration...${NC}"
   source "$TEMP_COMBINED_RC"
-  source_duration=$(get_duration_ms $source_start_time)
-  
-  # if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  #   if [[ $source_duration -gt $CUSTOMRC_SLOW_THRESHOLD_MS ]]; then
-  #     echo -e "${GREEN}${CHECKMARK}${NC} sourced: ${GREEN}combined configuration${NC} (${YELLOW}${source_duration}ms${NC})"
-  #   else
-  #     echo -e "${GREEN}${CHECKMARK}${NC} sourced: ${GREEN}combined configuration${NC} (${source_duration}ms)"
-  #   fi
-  # fi
 fi
 
-# Calculate total duration and display summary
+# Display initialization summary
 CUSTOMRC_TOTAL_DURATION=$(get_duration_ms $CUSTOMRC_START_TIME)
 
 if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then
-  echo -e "${ROCKET} Initialization complete: ${GREEN}${CUSTOMRC_LOADED_COUNT} loaded${NC}, ${RED}${CUSTOMRC_IGNORED_COUNT} ignored${NC}, took ${CUSTOMRC_TOTAL_DURATION}ms"
+  print_divider "$PURPLE" "customrc"
+  echo -e "${INFO} ${WHITE}Initialization complete${NC}"
+  echo -e "    ${CHECK} ${WHITE}Loaded: ${GREEN}${CUSTOMRC_LOADED_COUNT}${NC}"
+  echo -e "    ${CROSS} ${WHITE}Ignored: ${RED}${CUSTOMRC_IGNORED_COUNT}${NC}"
+  TOTAL_DURATION_COLOR=$(get_total_duration_color "$CUSTOMRC_TOTAL_DURATION")
+  echo -e "    ${WARN} ${WHITE}Duration: ${TOTAL_DURATION_COLOR}${CUSTOMRC_TOTAL_DURATION}ms${NC}"
+  echo ""
 fi
 
-# Apply prompt fix if needed
-if [[ -f "$CURRENT_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" ]]; then
-  source "$CURRENT_PATH/fix-prompt-at-bottom.sh"
+# Apply prompt positioning fix for non-Warp terminals (unless disabled)
+if [[ -f "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" && "$CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM" != "true" ]]; then
+  source "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh"
 fi
 
-# Clean up variables
-fileName=
-file=
+# Clean up variables to prevent shell environment pollution
+unset RED GREEN YELLOW BLUE PURPLE CYAN WHITE BOLD NC
+unset CHECK CROSS WARN INFO
+unset print_divider is_ignored add_file_to_combined get_duration_ms
+unset get_duration_color get_total_duration_color log_message process_rc_directory
+unset filename filepath
