@@ -14,14 +14,17 @@ add_file_to_combined() {
 
   {
     echo "# === Start of $filename [$category] ==="
-    echo "_file_start_time=\$(date +%s%N)"
+    echo '_file_start_time=$(date +%s%N)'
     cat "$filepath"
     echo ""
-    echo "_file_duration=\$(get_duration_ms \$_file_start_time)"
-    echo "if [[ \"\$CUSTOMRC_SILENT_OUTPUT\" != true ]]; then"
-    echo "  _duration_color=\$(get_duration_color \$_file_duration)"
+    echo '_file_end_time=$(date +%s%N)'
+    echo '_file_duration=$(( (_file_end_time - _file_start_time) / 1000000 ))'
+    echo 'if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then'
+    echo '  if (( _file_duration < 10 )); then _duration_color="'"$GREEN"'"'
+    echo '  elif (( _file_duration < 50 )); then _duration_color="'"$YELLOW"'"'
+    echo '  else _duration_color="'"$RED"'"; fi'
     echo "  echo -e \"${CHECK} ${WHITE}Loaded:${NC} ${BLUE}$filename ${PURPLE}[$category]${NC} (\${_duration_color}\${_file_duration}ms${NC})\""
-    echo "fi"
+    echo 'fi'
     echo "# === End of $filename [$category] ==="
     echo ""
   } >> "$TEMP_COMBINED_RC"

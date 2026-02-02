@@ -7,6 +7,7 @@ CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 CUSTOMRC_START_TIME=$(date +%s%N)
 CUSTOMRC_LOADED_COUNT=0
 CUSTOMRC_IGNORED_COUNT=0
+CUSTOMRC_TERMINAL_WIDTH=${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
 
 source "$CURRENT_PATH/configs.sh"
 source "$CUSTOMRC_HELPERS_PATH/styles.sh"
@@ -55,12 +56,12 @@ if [[ -s "$TEMP_COMBINED_RC" ]]; then
 fi
 
 # Display initialization summary
-CUSTOMRC_TOTAL_DURATION=$(get_duration_ms $CUSTOMRC_START_TIME)
+get_duration_ms $CUSTOMRC_START_TIME CUSTOMRC_TOTAL_DURATION
 print_divider "$PURPLE" "customrc"
 log_message "${INFO} ${WHITE}Initialization complete${NC}"
 log_message "    ${CHECK} ${WHITE}Loaded: ${GREEN}${CUSTOMRC_LOADED_COUNT}${NC}"
 log_message "    ${CROSS} ${WHITE}Ignored: ${RED}${CUSTOMRC_IGNORED_COUNT}${NC}"
-TOTAL_DURATION_COLOR=$(get_total_duration_color "$CUSTOMRC_TOTAL_DURATION")
+get_total_duration_color "$CUSTOMRC_TOTAL_DURATION" TOTAL_DURATION_COLOR
 log_message "    ${WARN} ${WHITE}Duration: ${TOTAL_DURATION_COLOR}${CUSTOMRC_TOTAL_DURATION}ms${NC}"
 
 # Apply prompt positioning fix for non-Warp terminals (unless disabled)
@@ -75,5 +76,5 @@ unset print_divider is_ignored add_file_to_combined get_duration_ms
 unset get_duration_color get_total_duration_color log_message process_rc_directory
 unset filename filepath
 unset CURRENT_PATH CUSTOMRC_RC_MODULES_PATH CUSTOMRC_HELPERS_PATH
-unset CUSTOMRC_START_TIME CUSTOMRC_LOADED_COUNT CUSTOMRC_IGNORED_COUNT
+unset CUSTOMRC_START_TIME CUSTOMRC_LOADED_COUNT CUSTOMRC_IGNORED_COUNT CUSTOMRC_TERMINAL_WIDTH
 unset CUSTOMRC_TOTAL_DURATION TEMP_COMBINED_RC OS_NAME TOTAL_DURATION_COLOR
