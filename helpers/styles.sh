@@ -12,7 +12,7 @@ BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 # Symbols
-CHECK="[✓]"
-CROSS="[✗]"
-WARN="[!]"
-INFO="[i]"
+CHECK="${GREEN}[✓]${NC}"
+CROSS="${RED}[✗]${NC}"
+WARN="${YELLOW}[!]${NC}"
+INFO="${CYAN}[i]${NC}"
