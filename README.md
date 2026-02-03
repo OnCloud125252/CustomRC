@@ -20,6 +20,7 @@ Reference: [Wiki/RUNCOM](https://en.wikipedia.org/wiki/RUNCOM)
 - **Modular Configuration**: Break down large `.zshrc` or `.bashrc` files into smaller, maintainable modules.
 - **Platform Specific Loading**: Automatically load modules based on your OS (Global, Darwin, Linux).
 - **Startup Control**: Easily manage which modules are loaded when your shell starts.
+- **Performance Optimized**: Modules use lazy loading, caching, and conditional loading for fast shell startup. See [Writing Optimized Modules](docs/optimized-modules.md).
 
 ## FAQs
 
