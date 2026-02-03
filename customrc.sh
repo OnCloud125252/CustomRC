@@ -6,6 +6,22 @@ CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 
 source "$CURRENT_PATH/configs.sh"
 
+# Check if rc-modules directory exists
+if [[ ! -d "$CUSTOMRC_RC_MODULES_PATH" ]]; then
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "CustomRC: rc-modules/ directory not found"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "Run the installer to set up your modules:"
+  echo "  ${CURRENT_PATH}/install.sh"
+  echo ""
+  echo "Or manually copy the template:"
+  echo "  cp -r ${CURRENT_PATH}/rc-modules.example ${CURRENT_PATH}/rc-modules"
+  echo ""
+  return 1 2>/dev/null || exit 1
+fi
+
 if [[ "$CUSTOMRC_DEBUG_MODE" == true ]]; then
   # Debug mode: verbose output with timing instrumentation
   CUSTOMRC_START_TIME=$(date +%s%N)

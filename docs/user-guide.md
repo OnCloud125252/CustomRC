@@ -1,27 +1,133 @@
 # User Guide
 
-This guide covers installation and common usage patterns for CustomRC.
+This guide covers installation, customization, and syncing CustomRC across machines.
 
 ## Installation
 
-Clone the repository:
+### Quick Install (Recommended)
 
 ```bash
-git clone --recurse-submodules https://github.com/OnCloud125252/CustomRC.git ~/.customrc
+# Clone the repository
+git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc
+
+# Run the installer
+~/.customrc/install.sh
 ```
 
-Add the configuration to your shell profile (e.g., `~/.zshrc`):
+The installer will:
+1. Check that you have a compatible shell (Bash 4+ or Zsh 5+)
+2. Create `rc-modules/` from the example templates
+3. Back up your existing shell configuration
+4. Add CustomRC to your shell startup
+
+### Manual Installation
 
 ```bash
-cat << 'EOF' >> ~/.zshrc
-# CustomRC
+# Clone the repository
+git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc
+
+# Copy template modules to create your personal modules
+cp -r ~/.customrc/rc-modules.example ~/.customrc/rc-modules
+
+# Add to your shell profile (~/.zshrc or ~/.bashrc)
 export CUSTOMRC_PATH="$HOME/.customrc"
-source $CUSTOMRC_PATH/customrc.sh
-# CustomRC End
-EOF
+source "$CUSTOMRC_PATH/customrc.sh"
+
+# Restart your shell
+exec $SHELL
 ```
 
-Restart your shell or run `source ~/.zshrc` to activate.
+## Customizing Your Modules
+
+### Module Structure
+
+Your personal modules live in `rc-modules/`:
+
+```
+rc-modules/
+├── Global/          # Loaded on all platforms
+│   └── ...
+├── Darwin/          # Loaded only on macOS
+│   └── ...
+└── Linux/           # Loaded only on Linux
+    └── ...
+```
+
+### Adding New Modules
+
+Create a `.sh` file in the appropriate directory:
+
+| Directory | When Loaded |
+|-----------|-------------|
+| `rc-modules/Global/` | Always (all platforms) |
+| `rc-modules/Darwin/` | Only on macOS |
+| `rc-modules/Linux/` | Only on Linux |
+
+The module will be automatically loaded on next shell start.
+
+### Example: Adding a Git Module
+
+Create `rc-modules/Global/git.sh`:
+
+```bash
+# Git aliases and configuration
+
+alias g="git"
+alias gs="git status"
+alias ga="git add"
+alias gc="git commit"
+alias gp="git push"
+alias gl="git log --oneline -10"
+
+# Git functions
+gclone() {
+  git clone "$1" && cd "$(basename "$1" .git)"
+}
+```
+
+## Syncing Across Machines
+
+Your `rc-modules/` directory is gitignored from CustomRC, giving you flexibility in how you sync your personal configurations.
+
+### Option 1: Separate Repository (Recommended)
+
+Keep your personal modules in their own Git repository:
+
+```bash
+# On your first machine
+cd ~/.customrc
+rm -rf rc-modules  # Remove the template copy
+git clone https://github.com/YOU/my-shell-config.git rc-modules
+
+# On other machines, after installing CustomRC
+cd ~/.customrc
+rm -rf rc-modules
+git clone https://github.com/YOU/my-shell-config.git rc-modules
+```
+
+Benefits:
+- Your personal configs are versioned separately
+- Update CustomRC without affecting your modules
+- Easy to share modules between machines
+- Keep sensitive configs in a private repo
+
+### Option 2: Dotfiles Repository
+
+If you already have a dotfiles repository:
+
+```bash
+# Symlink your modules directory
+ln -s ~/dotfiles/shell-modules ~/.customrc/rc-modules
+```
+
+### Option 3: Manual Sync
+
+For simple setups, copy files manually or use a sync tool:
+
+```bash
+# Using rsync
+rsync -av ~/.customrc/rc-modules/ user@otherhost:~/.customrc/rc-modules/
+```
 
 ## Configuration
 
@@ -30,39 +136,76 @@ See [Configuration](configuration.md) for detailed options including:
 - Ignore lists for disabling modules
 - Cache management
 
-## Adding New Modules
+## Debug Mode
 
-Create a `.sh` file in the appropriate directory:
+Enable debug mode to see timing information for each module:
 
-| Directory | Use Case |
-|-----------|----------|
-| `rc-modules/Global/` | Cross-platform modules |
-| `rc-modules/Darwin/` | macOS-specific modules |
-| `rc-modules/Linux/` | Linux-specific modules |
+```bash
+export CUSTOMRC_DEBUG_MODE=true
+source ~/.customrc/customrc.sh
+```
 
-The module will be automatically loaded on next shell start.
+This shows:
+- Which modules are loaded
+- Load time for each module
+- Total initialization time
 
-See [Writing Optimized Modules](optimized-modules.md) for performance best practices.
+Use this to identify slow modules that need optimization.
 
-## FAQs
+## Performance Tips
 
-### Is this safe to use on my machine?
+1. **Add slow modules to ignore lists** in `configs.sh`
+2. **Use lazy loading** for tools you don't use every session
+3. **Leverage the cache system** for expensive initializations
 
-This repository contains personal configurations. Some modules may not work in your environment or may conflict with your existing setup. Review the modules in `rc-modules/Global`, `rc-modules/Darwin`, and `rc-modules/Linux` before using.
+See [Writing Optimized Modules](optimized-modules.md) for detailed guidance.
 
-### How do I debug slow shell startup?
-
-1. Set `CUSTOMRC_DEBUG_MODE=true` in `configs.sh`
-2. Restart your shell
-3. Look for modules with high load times
-4. Add slow modules to the appropriate ignore list
-5. Set `CUSTOMRC_DEBUG_MODE=false` for daily use
-
-### How do I update CustomRC?
+## Updating CustomRC
 
 ```bash
 cd ~/.customrc
-git pull --recurse-submodules
+git pull
 ```
 
 The monolithic cache will auto-regenerate on next shell start.
+
+Your personal modules in `rc-modules/` are unaffected by updates.
+
+## Troubleshooting
+
+### Shell startup is slow
+
+1. Enable debug mode to identify slow modules
+2. Add slow modules to the appropriate ignore list in `configs.sh`
+3. Consider lazy loading for heavy tools (nvm, pyenv, etc.)
+
+### Module not loading
+
+1. Check the file has a `.sh` extension
+2. Verify the file is in the correct directory for your OS
+3. Check if it's in an ignore list in `configs.sh`
+4. Look for syntax errors: `bash -n rc-modules/Global/yourmodule.sh`
+
+### Changes not taking effect
+
+In production mode, changes are cached. Either:
+- Remove the cache: `rm -rf ~/.cache/customrc/`
+- Or restart your shell (cache auto-rebuilds when files change)
+
+## FAQs
+
+### Can I use this with Oh My Zsh / Prezto / other frameworks?
+
+Yes! CustomRC complements shell frameworks. Load CustomRC after your framework in your shell rc file.
+
+### How is this different from just having multiple source files?
+
+CustomRC adds:
+- Automatic platform detection (Darwin/Linux)
+- Smart caching for production performance
+- Debug mode with timing
+- Ignore lists for easy module management
+
+### Do I need to fork CustomRC to use it?
+
+No. Your personal modules live in `rc-modules/` which is gitignored. You can update CustomRC independently of your personal configurations.

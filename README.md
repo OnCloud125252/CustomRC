@@ -1,68 +1,138 @@
 # CustomRC
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Shell: Bash 4+](https://img.shields.io/badge/Shell-Bash%204%2B-green.svg)](https://www.gnu.org/software/bash/)
+[![Shell: Zsh 5+](https://img.shields.io/badge/Shell-Zsh%205%2B-green.svg)](https://www.zsh.org/)
+
 *Break down massive rc files like bashrc or zshrc into manageable modules with automatic caching for fast shell startup.*
 
 ## Overview
 
-RC stands for "run command"—a file containing commands executed when the shell starts. This project splits your monolithic shell configuration into smaller, organized files based on functionality or operating system.
+RC stands for "run command"—a file containing commands executed when the shell starts. CustomRC splits your monolithic shell configuration into smaller, organized files based on functionality or operating system.
 
 You get the maintainability of modular configs with the performance of a single cached file.
 
-Reference: [Wiki/RUNCOM](https://en.wikipedia.org/wiki/RUNCOM)
-
 ## Features
 
-- **Modular Configuration**: Break down large `.zshrc` or `.bashrc` files into smaller, maintainable modules.
-- **Platform Specific Loading**: Automatically load modules based on your OS (Global, Darwin, Linux).
-- **Dual Mode Operation**: Debug mode for development with timing, production mode for instant startup.
-- **Smart Caching**: Monolithic cache auto-regenerates when source files change.
-- **Ignore Lists**: Easily disable slow or unused modules per platform.
+- **Modular Configuration** — Organize your shell config into logical modules
+- **Platform-Specific Loading** — Automatically load modules for your OS (Global, Darwin, Linux)
+- **Dual Mode Operation** — Debug mode for development with timing, production mode for instant startup
+- **Smart Caching** — Monolithic cache auto-regenerates when source files change
+- **Ignore Lists** — Easily disable slow or unused modules per platform
+- **Your Configs, Your Repo** — Keep your personal modules in a separate repository
 
 ## Quick Start
 
+### Installation
+
 ```bash
 # Clone the repository
-git clone --recurse-submodules https://github.com/OnCloud125252/CustomRC.git ~/.customrc
+git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc
 
-# Add to your shell profile
-echo 'export CUSTOMRC_PATH="$HOME/.customrc"' >> ~/.zshrc
-echo 'source $CUSTOMRC_PATH/customrc.sh' >> ~/.zshrc
-
-# Restart shell
-exec zsh
+# Run the installer
+~/.customrc/install.sh
 ```
 
-See the [User Guide](docs/user-guide.md) for detailed installation and configuration instructions.
+The installer will:
+1. Create `rc-modules/` from the example templates
+2. Back up your existing shell config
+3. Add CustomRC to your shell startup
+
+### Manual Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc
+
+# Copy template modules
+cp -r ~/.customrc/rc-modules.example ~/.customrc/rc-modules
+
+# Add to your shell profile (~/.zshrc or ~/.bashrc)
+export CUSTOMRC_PATH="$HOME/.customrc"
+source "$CUSTOMRC_PATH/customrc.sh"
+
+# Restart your shell
+exec $SHELL
+```
+
+## Usage
+
+### Adding Your Own Modules
+
+Edit the files in `rc-modules/` to add your aliases, functions, and exports:
+
+```
+rc-modules/
+├── Global/          # Loaded on all platforms
+│   ├── aliases.sh
+│   ├── functions.sh
+│   └── exports.sh
+├── Darwin/          # Loaded only on macOS
+│   ├── aliases.sh
+│   └── homebrew.sh
+└── Linux/           # Loaded only on Linux
+    ├── aliases.sh
+    └── package-manager.sh
+```
+
+### Debug Mode
+
+Enable debug mode to see timing information for each module:
+
+```bash
+export CUSTOMRC_DEBUG_MODE=true
+source ~/.customrc/customrc.sh
+```
+
+### Syncing Across Machines
+
+Your `rc-modules/` directory is gitignored, so you can:
+
+1. Create a separate repository for your personal modules
+2. Clone it as `rc-modules/` in your CustomRC directory
+3. Keep your personal configs synced without forking CustomRC
+
+See the [User Guide](docs/user-guide.md) for detailed instructions.
 
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
-| [User Guide](docs/user-guide.md) | Installation and FAQs |
+| [User Guide](docs/user-guide.md) | Installation, customization, and syncing |
 | [Configuration](docs/configuration.md) | Operating modes, ignore lists, cache management |
 | [Writing Optimized Modules](docs/optimized-modules.md) | Performance best practices |
 | [Caching System](docs/caching.md) | Cache helper API documentation |
-
 
 ## Project Structure
 
 ```
 ~/.customrc/
-├── customrc.sh          # Main entry point
-├── configs.sh           # Configuration and ignore lists
+├── customrc.sh           # Main entry point
+├── configs.sh            # Configuration and ignore lists
+├── install.sh            # Installation script
 ├── helpers/
-│   ├── cache.sh         # Caching utility with TTL and binary checking
-│   ├── monolithic.sh    # Production mode cache generator
-│   ├── loader.sh        # Debug mode module loader with timing
-│   ├── logging.sh       # Output formatting
-│   ├── timing.sh        # Execution timing utilities
-│   └── styles.sh        # Color and style definitions
-├── rc-modules/
-│   ├── Global/          # Cross-platform modules
-│   ├── Darwin/          # macOS-specific modules
-│   └── Linux/           # Linux-specific modules
+│   ├── cache.sh          # Caching utility with TTL and binary checking
+│   ├── monolithic.sh     # Production mode cache generator
+│   ├── loader.sh         # Debug mode module loader with timing
+│   ├── logging.sh        # Output formatting
+│   ├── timing.sh         # Execution timing utilities
+│   └── styles.sh         # Color and style definitions
+├── rc-modules.example/   # Template modules (tracked in git)
+│   ├── Global/
+│   ├── Darwin/
+│   └── Linux/
+├── rc-modules/           # Your modules (gitignored)
 └── docs/
-    ├── user-guide.md         # Installation and usage guide
-    ├── optimized-modules.md  # Performance optimization guide
-    └── caching.md            # Caching system documentation
 ```
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Reference
+
+- [Wikipedia: RUNCOM](https://en.wikipedia.org/wiki/RUNCOM)

@@ -2,3 +2,6 @@
 .worktrees
 docs/plans
 tests
+
+# Personal user configurations (use rc-modules.example/ as template)
+rc-modules/
