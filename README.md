@@ -57,9 +57,30 @@ exec $SHELL
 
 ## Usage
 
-### Adding Your Own Modules
+CustomRC comes with a built-in CLI tool to manage your configuration.
 
-Edit the files in `rc-modules/` to add your aliases, functions, and exports:
+```bash
+customrc help
+```
+
+### Managing Modules
+
+Easily manage your modules directly from the command line:
+
+```bash
+# List all loaded modules
+customrc modules list
+
+# Create a new module
+customrc modules new Global/my-config
+
+# Edit an existing module
+customrc modules edit Global/my-config
+```
+
+### Manual Configuration
+
+You can also manually edit files in `rc-modules/` to add your aliases, functions, and exports:
 
 ```
 rc-modules/
@@ -76,25 +97,37 @@ rc-modules/
 Enable debug mode to see timing information for each module:
 
 ```bash
-export CUSTOMRC_DEBUG_MODE=true
-source ~/.customrc/customrc.sh
+customrc debug on
+```
+
+To disable it later:
+```bash
+customrc debug off
 ```
 
 ### Syncing Across Machines
 
-Your `rc-modules/` directory is gitignored, so you can:
+Manage your `rc-modules` git repository directly:
 
-1. Create a separate repository for your personal modules
-2. Clone it as `rc-modules/` in your CustomRC directory
-3. Keep your personal configs synced without forking CustomRC
+```bash
+# Initialize or clone your modules repo
+customrc sync init https://github.com/username/my-modules.git
 
-See the [User Guide: Syncing Across Machines](docs/user-guide.md#syncing-across-machines) for detailed instructions.
+# Push changes
+customrc sync push
+
+# Pull updates
+customrc sync pull
+```
+
+See the [User Guide: Syncing Across Machines](docs/user-guide.md#syncing-across-machines) for more details.
 
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
 | [User Guide](docs/user-guide.md) | Installation, customization, and syncing |
+| [CLI Reference](docs/helpers/customrc-cli.md) | Comprehensive guide to the `customrc` command |
 | [Configuration](docs/configuration.md) | Operating modes, ignore lists, cache management |
 | [Writing Optimized Modules](docs/optimized-modules.md) | Performance best practices |
 | [Caching System](docs/caching.md) | Cache helper API documentation |

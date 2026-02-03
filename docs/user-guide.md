@@ -55,7 +55,15 @@ rc-modules/
 
 ### Adding New Modules
 
-Create a `.sh` file in the appropriate directory:
+The easiest way to add a new module is using the CLI:
+
+```bash
+customrc modules new Global/git
+```
+
+This creates the file with a template and opens it in your editor.
+
+Alternatively, you can manually create a `.sh` file in the appropriate directory:
 
 | Directory | When Loaded |
 |-----------|-------------|
@@ -89,7 +97,42 @@ gclone() {
 
 Your `rc-modules/` directory is gitignored from CustomRC, giving you flexibility in how you sync your personal configurations.
 
-### Option 1: Separate Repository (Recommended)
+### Using the CLI (Recommended)
+
+The `customrc` CLI makes syncing easy.
+
+**On your first machine:**
+
+1. Initialize your modules directory as a git repo:
+   ```bash
+   cd ~/.customrc/rc-modules
+   git init
+   git add .
+   git commit -m "Initial commit"
+   ```
+2. Create a repository on GitHub/GitLab.
+3. Link and push:
+   ```bash
+   customrc sync init https://github.com/YOU/my-shell-config.git
+   customrc sync push
+   ```
+
+**On other machines:**
+
+After installing CustomRC, simply run:
+
+```bash
+customrc sync init https://github.com/YOU/my-shell-config.git
+```
+
+**Daily usage:**
+
+```bash
+customrc sync pull   # Get latest changes
+customrc sync push   # Save your changes
+```
+
+### Manual Method: Separate Repository
 
 Keep your personal modules in their own Git repository:
 
@@ -141,8 +184,13 @@ See [Configuration](configuration.md) for detailed options including:
 Enable debug mode to see timing information for each module:
 
 ```bash
-export CUSTOMRC_DEBUG_MODE=true
-source ~/.customrc/customrc.sh
+customrc debug on
+```
+
+To return to production mode:
+
+```bash
+customrc debug off
 ```
 
 This shows:
