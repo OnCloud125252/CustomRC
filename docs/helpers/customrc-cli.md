@@ -307,6 +307,66 @@ Disables debug mode in `configs.sh`.
 customrc debug off
 ```
 
+## Update Command
+
+Update CustomRC to the latest version from the remote repository.
+
+### `customrc update`
+
+Fetches and pulls the latest changes from the remote repository.
+
+```bash
+customrc update
+```
+
+**Behavior:**
+1. Checks if CustomRC directory is a git repository
+2. Warns and exits if there are uncommitted changes
+3. Fetches from the remote and shows new commits
+4. Pulls the updates
+5. Automatically rebuilds the monolithic cache
+6. Reminds you to restart your shell
+
+### `customrc update --force`
+
+Forces the update even with uncommitted changes. Uses `git reset --hard` instead of `git pull`.
+
+```bash
+customrc update --force
+```
+
+**Warning:** This will discard any local uncommitted changes in the CustomRC directory.
+
+**Example Output:**
+```
+━━━━[CustomRC Update]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[i] Fetching from origin/main...
+[i] Found 3 new commit(s)
+
+89b682a feat: add platform detection and improve module command help messages
+fecc4ed feat: add update command for CustomRC to fetch and pull latest changes
+a96413a feat: enhance user guide with CLI commands for module management
+
+[i] Pulling updates...
+[✓] Updated CustomRC to latest version
+
+[i] Rebuilding cache...
+[i] Clearing monolithic cache...
+[i] Rebuilding monolithic cache...
+[✓] Rebuilt monolithic cache
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[✓] Update complete!
+[i] Restart your shell to apply changes
+```
+
+**Notes:**
+- If CustomRC is not a git repository, the command will fail with guidance
+- If no remote is configured, you'll be prompted to add one
+- If already up to date, the command exits early without rebuilding cache
+
 ## Internal Functions
 
 These functions are used internally by the CLI:
