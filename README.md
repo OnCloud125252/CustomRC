@@ -64,15 +64,11 @@ Edit the files in `rc-modules/` to add your aliases, functions, and exports:
 ```
 rc-modules/
 ├── Global/          # Loaded on all platforms
-│   ├── aliases.sh
-│   ├── functions.sh
-│   └── exports.sh
+│   └── ...
 ├── Darwin/          # Loaded only on macOS
-│   ├── aliases.sh
-│   └── homebrew.sh
+│   └── ...
 └── Linux/           # Loaded only on Linux
-    ├── aliases.sh
-    └── package-manager.sh
+    └── ...
 ```
 
 ### Debug Mode
@@ -92,7 +88,7 @@ Your `rc-modules/` directory is gitignored, so you can:
 2. Clone it as `rc-modules/` in your CustomRC directory
 3. Keep your personal configs synced without forking CustomRC
 
-See the [User Guide](docs/user-guide.md) for detailed instructions.
+See the [User Guide: Syncing Across Machines](docs/user-guide.md#syncing-across-machines) for detailed instructions.
 
 ## Documentation
 
@@ -102,28 +98,6 @@ See the [User Guide](docs/user-guide.md) for detailed instructions.
 | [Configuration](docs/configuration.md) | Operating modes, ignore lists, cache management |
 | [Writing Optimized Modules](docs/optimized-modules.md) | Performance best practices |
 | [Caching System](docs/caching.md) | Cache helper API documentation |
-
-## Project Structure
-
-```
-~/.customrc/
-├── customrc.sh           # Main entry point
-├── configs.sh            # Configuration and ignore lists
-├── install.sh            # Installation script
-├── helpers/
-│   ├── cache.sh          # Caching utility with TTL and binary checking
-│   ├── monolithic.sh     # Production mode cache generator
-│   ├── loader.sh         # Debug mode module loader with timing
-│   ├── logging.sh        # Output formatting
-│   ├── timing.sh         # Execution timing utilities
-│   └── styles.sh         # Color and style definitions
-├── rc-modules.example/   # Template modules (tracked in git)
-│   ├── Global/
-│   ├── Darwin/
-│   └── Linux/
-├── rc-modules/           # Your modules (gitignored)
-└── docs/
-```
 
 ## Contributing
 
