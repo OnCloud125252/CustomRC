@@ -1,34 +1,29 @@
-# Caching System
+# Cache Helper
 
-CustomRC includes a centralized caching utility (`helpers/cache.sh`) that speeds up expensive tool initializations by storing generated scripts and regenerating them only when needed.
+The `cache.sh` helper provides a centralized caching system for CustomRC, enabling fast shell initialization by caching expensive command outputs with TTL support and binary version checking.
 
-## Quick Start
+## Location
 
-```bash
-# Cache a tool's init script with automatic binary version checking
-cache_init "fzf" "fzf --zsh" --check-binary "$(command -v fzf)"
-
-# Cache with TTL expiration
-cache_init "myconfig" "generate-config" --ttl "7d"
-
-# Management commands
-cache_list      # View all caches with status
-cache_clear     # Clear all caches
-cache_refresh   # Force regenerate a specific cache
+```
+helpers/cache.sh
 ```
 
-## Features
+## Overview
 
-- **Binary version checking**: Regenerate cache when tool updates
-- **TTL support**: Time-based expiration (`1h`, `7d`, `30m`, `1w`, etc.)
-- **Metadata tracking**: Debug information for each cache entry
-- **Graceful fallback**: Keep stale cache if regeneration fails
+This helper reduces shell startup time by caching the output of slow initialization commands (like `eval "$(tool init zsh)"`). Caches are automatically invalidated based on TTL expiration or when the source binary is updated.
 
-## API Reference
+## Configuration
+
+```bash
+# Custom cache directory (default: ~/.cache/customrc)
+export CUSTOMRC_CACHE_DIR="$HOME/.cache/customrc"
+```
+
+## Functions
 
 ### `cache_init`
 
-Main caching function that generates and sources cached scripts.
+Main caching function that initializes or regenerates a cache.
 
 ```bash
 cache_init <name> <command> [options]
@@ -36,89 +31,98 @@ cache_init <name> <command> [options]
 
 **Parameters:**
 - `name` - Unique identifier for the cache
-- `command` - Shell command to generate the cache content
+- `command` - Shell command to generate cache content
 
 **Options:**
-| Option | Description | Example |
-|--------|-------------|---------|
-| `--ttl <duration>` | Cache expiration time | `--ttl "7d"` |
-| `--check-binary <path>` | Regenerate if binary is newer | `--check-binary "$(command -v fzf)"` |
-| `--extension <ext>` | File extension (default: `zsh`) | `--extension "sh"` |
-| `--no-source` | Don't source the file after caching | For non-shell content |
+| Option | Description |
+|--------|-------------|
+| `--ttl <duration>` | Cache lifetime (e.g., `1h`, `7d`, `3600`) |
+| `--check-binary <path>` | Regenerate if binary is newer than cache |
+| `--extension <ext>` | File extension (default: `zsh`) |
+| `--no-source` | Don't source the cache file after creation |
 
 **TTL Format:**
-- `s` - seconds (`30s`)
-- `m` - minutes (`30m`)
-- `h` - hours (`1h`)
-- `d` - days (`7d`)
-- `w` - weeks (`1w`)
+| Unit | Example | Meaning |
+|------|---------|---------|
+| `s` | `30s` | 30 seconds |
+| `m` | `15m` | 15 minutes |
+| `h` | `2h` | 2 hours |
+| `d` | `7d` | 7 days |
+| `w` | `1w` | 1 week |
 
-**Examples:**
-
+**Usage:**
 ```bash
-# Basic usage - cache fzf init script
-cache_init "fzf" "fzf --zsh"
-
-# With binary checking - regenerate when fzf is updated
-cache_init "fzf" "fzf --zsh" --check-binary "$(command -v fzf)"
-
-# With TTL - regenerate every 7 days
+# Cache with TTL
 cache_init "starship" "starship init zsh" --ttl "7d"
 
-# Combined - both binary check and TTL
-cache_init "atuin" "atuin init zsh" --check-binary "$(command -v atuin)" --ttl "1d"
+# Cache with binary version checking
+cache_init "zoxide" "zoxide init zsh" --check-binary "$(command -v zoxide)"
 
-# Non-shell content
-cache_init "my-data" "generate-data" --extension "json" --no-source
+# Combined: TTL + binary check
+cache_init "fzf" "fzf --zsh" \
+  --ttl "7d" \
+  --check-binary "$(command -v fzf)"
+
+# Non-shell content (won't be sourced)
+cache_init "version" "myapp --version" --no-source --extension "txt"
 ```
+
+**Returns:** `0` on success, `1` on failure
 
 ### `cache_get`
 
-Read cached content into a variable (for non-sourced caches).
+Reads cached content into a variable (for non-sourced caches).
 
 ```bash
 cache_get <name> [result_var] [--extension ext]
 ```
 
-**Examples:**
+**Parameters:**
+- `name` - Cache identifier
+- `result_var` - Variable to store content (optional, prints if omitted)
 
+**Usage:**
 ```bash
 # Print cache content
-cache_get "my-data"
+cache_get "version"
 
 # Store in variable
-cache_get "my-data" MY_VAR
-echo "$MY_VAR"
-
-# With custom extension
-cache_get "config" CONFIG_DATA --extension "json"
+local my_version
+cache_get "version" my_version --extension "txt"
 ```
+
+**Returns:** `0` if cache exists and has content, `1` otherwise
 
 ### `cache_list`
 
-Display all caches with status information.
+Displays all caches with status information.
 
 ```bash
 cache_list
 ```
 
-**Output:**
-
+**Example Output:**
 ```
 NAME            SIZE       AGE          STATUS               BINARY
 ----            ----       ---          ------               ------
-fzf             2KB        3h ago       valid                fzf
-atuin           4KB        1d ago       valid                atuin
-starship        1KB        8d ago       expired (ttl: 7d)    starship
+starship        12KB       2d ago       valid                starship
+zoxide          1KB        5h ago       valid                zoxide
+fzf             3KB        8d ago       expired (ttl: 7d)    fzf
+mise            2KB        1d ago       stale (binary updated) mise
 ```
 
 ### `cache_clear`
 
-Remove cached files.
+Removes specific or all caches.
 
 ```bash
+cache_clear [name]
+```
+
+**Usage:**
+```bash
 # Clear specific cache
-cache_clear <name>
+cache_clear "starship"
 
 # Clear all caches
 cache_clear
@@ -126,83 +130,85 @@ cache_clear
 
 ### `cache_refresh`
 
-Force regenerate a cache using its stored command.
+Forces regeneration of a specific cache using stored metadata.
 
 ```bash
 cache_refresh <name>
 ```
 
-## Cache Location
+**Usage:**
+```bash
+cache_refresh "starship"
+```
 
-All caches are stored in `~/.cache/customrc/`:
+This function reads the original command and options from metadata and re-executes the cache generation.
+
+## Cache Invalidation
+
+Caches are automatically invalidated when:
+
+1. **TTL Expired** - The cache file age exceeds the specified TTL
+2. **Binary Updated** - The source binary is newer than the cache file
+3. **Cache Missing** - The cache file doesn't exist
+
+When regeneration fails, stale cache is preserved to prevent shell breakage.
+
+## File Structure
 
 ```
 ~/.cache/customrc/
-├── fzf.zsh           # Cached init script
-├── atuin.zsh
-├── starship.zsh
-└── .meta/            # Metadata directory
-    ├── fzf.meta      # Command, creation time, options
-    ├── atuin.meta
-    └── starship.meta
+├── starship.zsh          # Cached shell init script
+├── zoxide.zsh
+├── fzf.zsh
+└── .meta/
+    ├── starship.meta     # Metadata (command, created, binary, ttl)
+    ├── zoxide.meta
+    └── fzf.meta
 ```
+
+## Performance Impact
+
+Using caching can dramatically improve shell startup time:
+
+| Tool | Without Cache | With Cache |
+|------|---------------|------------|
+| `starship init zsh` | ~50ms | ~2ms |
+| `zoxide init zsh` | ~15ms | ~1ms |
+| `fzf --zsh` | ~10ms | ~1ms |
 
 ## Usage in Modules
 
-Here's how to use caching in your CustomRC modules:
-
 ```bash
 #!/usr/bin/env zsh
-# Module: fzf.sh
+# Module: tools.sh
 
-command -v fzf &>/dev/null || return 0
+# Cache expensive tool initializations
+if command -v starship &>/dev/null; then
+  cache_init "starship" "starship init zsh" \
+    --ttl "7d" \
+    --check-binary "$(command -v starship)"
+fi
 
-# Use cache_init instead of eval
-cache_init "fzf" "fzf --zsh" --check-binary "$(command -v fzf)"
-
-# Your aliases and functions
-alias fzfp='fzf --preview "bat --color=always {}"'
+if command -v zoxide &>/dev/null; then
+  cache_init "zoxide" "zoxide init zsh" \
+    --check-binary "$(command -v zoxide)"
+fi
 ```
 
-**Before (slow):**
-```bash
-eval "$(fzf --zsh)"  # ~30ms every shell start
-```
+## Internal Functions
 
-**After (fast):**
-```bash
-cache_init "fzf" "fzf --zsh" --check-binary "$(command -v fzf)"  # ~1ms (cached)
-```
+These functions are used internally by `cache_init`:
 
-## Troubleshooting
+| Function | Purpose |
+|----------|---------|
+| `_cache_ttl_to_seconds` | Converts TTL string to seconds |
+| `_cache_is_expired` | Checks if cache has exceeded TTL |
+| `_cache_binary_newer` | Checks if binary is newer than cache |
+| `_cache_write_meta` | Writes metadata for a cache entry |
+| `_cache_read_meta` | Reads metadata value for a cache entry |
 
-### Cache not regenerating
+## See Also
 
-Check if the binary path is correct:
-```bash
-cache_list  # Shows binary column
-```
-
-### Force regeneration
-
-```bash
-# Method 1: Use cache_refresh
-cache_refresh fzf
-
-# Method 2: Clear and restart shell
-cache_clear fzf
-exec zsh
-```
-
-### View cache metadata
-
-```bash
-cat ~/.cache/customrc/.meta/fzf.meta
-```
-
-### Clear all caches
-
-```bash
-cache_clear
-exec zsh
-```
+- [timing.md](./timing.md) - Performance measurement
+- [../optimized-modules.md](../optimized-modules.md) - Optimization patterns
+- [logging.md](./logging.md) - Debug output functions
