@@ -1,11 +1,5 @@
 # FZF initialization - using cached output for faster startup
-_fzf_cache="$HOME/.cache/fzf/init.zsh"
-if [[ ! -f "$_fzf_cache" ]] || [[ "$(command -v fzf)" -nt "$_fzf_cache" ]]; then
-  mkdir -p "$HOME/.cache/fzf"
-  fzf --zsh > "$_fzf_cache" 2>/dev/null
-fi
-[[ -f "$_fzf_cache" ]] && source "$_fzf_cache"
-unset _fzf_cache
+cache_init "fzf" "fzf --zsh" --check-binary "$(command -v fzf)"
 
 export FZF_COMPLETION_TRIGGER='**'
 export FZF_COMPLETION_OPTS='--layout=default'

@@ -13,6 +13,7 @@ source "$CURRENT_PATH/configs.sh"
 source "$CUSTOMRC_HELPERS_PATH/styles.sh"
 source "$CUSTOMRC_HELPERS_PATH/logging.sh"
 source "$CUSTOMRC_HELPERS_PATH/timing.sh"
+source "$CUSTOMRC_HELPERS_PATH/cache.sh"
 source "$CUSTOMRC_HELPERS_PATH/loader.sh"
 
 
@@ -74,6 +75,8 @@ unset RED GREEN YELLOW BLUE PURPLE CYAN WHITE BOLD NC
 unset CHECK CROSS WARN INFO
 unset print_divider is_ignored add_file_to_combined get_duration_ms
 unset get_duration_color get_total_duration_color log_message process_rc_directory
+unset _cache_ttl_to_seconds _cache_is_expired _cache_binary_newer _cache_write_meta _cache_read_meta
+unset cache_init cache_get CUSTOMRC_CACHE_DIR CUSTOMRC_CACHE_META_DIR
 unset filename filepath
 unset CURRENT_PATH CUSTOMRC_RC_MODULES_PATH CUSTOMRC_HELPERS_PATH
 unset CUSTOMRC_START_TIME CUSTOMRC_LOADED_COUNT CUSTOMRC_IGNORED_COUNT CUSTOMRC_TERMINAL_WIDTH
