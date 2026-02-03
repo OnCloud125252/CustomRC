@@ -216,7 +216,7 @@ exec zsh
 
 ## Ignore List
 
-For modules that are too slow or rarely needed, add them to the ignore list in `~/.customrc/helpers/configs.sh`:
+For modules that are too slow or rarely needed, add them to the ignore list in `~/.customrc/configs.sh`:
 
 ```bash
 CUSTOMRC_GLOBAL_IGNORE_LIST=(

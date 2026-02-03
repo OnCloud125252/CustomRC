@@ -160,5 +160,5 @@ exec zsh
 ## See Also
 
 - [loader.md](./loader.md) - Debug mode with timing instrumentation
-- [../caching.md](../caching.md) - General caching system
+- [caching.md](./caching.md) - General caching system
 - [../optimized-modules.md](../optimized-modules.md) - Module optimization guide

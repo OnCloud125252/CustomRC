@@ -89,16 +89,16 @@ This helper works with:
 - zsh (primary target)
 - Most terminal emulators (iTerm2, Terminal.app, Alacritty, etc.)
 
-## Disabling
+## Configuration
 
-To disable this behavior, add the file to your ignore list in `configs.sh`:
+This feature is controlled by the `CUSTOMRC_PROMPT_FIX_AT_BOTTOM` variable in `configs.sh`:
 
 ```bash
-CUSTOMRC_GLOBAL_IGNORE_LIST=(
-  "fix-prompt-at-bottom.sh"
-  # ... other ignored files
-)
+CUSTOMRC_PROMPT_FIX_AT_BOTTOM=true   # Enable (default)
+CUSTOMRC_PROMPT_FIX_AT_BOTTOM=false  # Disable
 ```
+
+**Note:** This feature is automatically disabled when debug mode is active (`CUSTOMRC_DEBUG_MODE=true`) for better readability of debug output.
 
 ## See Also
 
