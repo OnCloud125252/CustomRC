@@ -7,46 +7,46 @@
 # Styles & Logging
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Basic Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-WHITE='\033[0;37m'
-NC='\033[0m' # No Color
+# CLI Colors (prefixed to avoid collision with debug mode cleanup)
+_CLI_RED='\033[0;31m'
+_CLI_GREEN='\033[0;32m'
+_CLI_YELLOW='\033[0;33m'
+_CLI_BLUE='\033[0;34m'
+_CLI_PURPLE='\033[0;35m'
+_CLI_CYAN='\033[0;36m'
+_CLI_WHITE='\033[0;37m'
+_CLI_NC='\033[0m' # No Color
 
-# Symbols
-CHECK="${GREEN}[✓]${NC}"
-CROSS="${RED}[✗]${NC}"
-WARN="${YELLOW}[!]${NC}"
-INFO="${CYAN}[i]${NC}"
+# CLI Symbols (prefixed to avoid collision with debug mode cleanup)
+_CLI_CHECK='\033[0;32m[✓]\033[0m'
+_CLI_CROSS='\033[0;31m[✗]\033[0m'
+_CLI_WARN='\033[0;33m[!]\033[0m'
+_CLI_INFO='\033[0;36m[i]\033[0m'
 
 # Prints a full-width divider line with a centered label
 _customrc_divider() {
-  local color="${1:-$PURPLE}" label="${2:-customrc}"
+  local color="${1:-$_CLI_PURPLE}" label="${2:-customrc}"
   local terminal_width=${CUSTOMRC_TERMINAL_WIDTH:-80}
   local padding_width=$((terminal_width - ${#label} - 6))
   local spaces
   printf -v spaces '%*s' "$padding_width" ''
-  printf '%b━━━━[%s]%s%b\n' "$color" "$label" "${spaces// /━}" "$NC"
+  printf '%b━━━━[%s]%s%b\n' "$color" "$label" "${spaces// /━}" "$_CLI_NC"
 }
 
 _customrc_info() {
-  echo -e "$INFO $1"
+  echo -e "$_CLI_INFO $1"
 }
 
 _customrc_success() {
-  echo -e "$CHECK $1"
+  echo -e "$_CLI_CHECK $1"
 }
 
 _customrc_warn() {
-  echo -e "$WARN $1"
+  echo -e "$_CLI_WARN $1"
 }
 
 _customrc_error() {
-  echo -e "$CROSS $1"
+  echo -e "$_CLI_CROSS $1"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -155,9 +155,12 @@ _customrc_sync_status() {
   fi
 
   echo ""
-  echo -e "${PURPLE}rc-modules git status:${NC}"
+  _customrc_divider "$_CLI_PURPLE" "rc-modules git status"
   echo ""
   (cd "$modules_path" && git status)
+  echo ""
+  _customrc_divider "$_CLI_PURPLE"
+  echo ""
 }
 
 _customrc_sync() {
@@ -223,7 +226,7 @@ _customrc_cache_status() {
   local monolithic_cache="$cache_path/monolithic.sh"
 
   echo ""
-  echo -e "${PURPLE}Cache Status:${NC}"
+  echo -e "${_CLI_PURPLE}Cache Status:${_CLI_NC}"
   echo ""
 
   if [[ ! -d "$cache_path" ]]; then
@@ -310,7 +313,7 @@ _customrc_modules_list() {
   source "$customrc_path/configs.sh" 2>/dev/null
 
   echo ""
-  echo -e "${PURPLE}Modules:${NC}"
+  echo -e "${_CLI_PURPLE}Modules:${_CLI_NC}"
 
   local os_name=$(uname)
   local categories=("Global")
@@ -325,7 +328,7 @@ _customrc_modules_list() {
     [[ ! -d "$category_path" ]] && continue
 
     echo ""
-    echo -e "  ${CYAN}$category/${NC}"
+    echo -e "  ${_CLI_CYAN}$category/${_CLI_NC}"
 
     # Get ignore list for this category
     local -a ignore_list
@@ -348,9 +351,9 @@ _customrc_modules_list() {
       done
 
       if [[ "$is_ignored" == true ]]; then
-        echo -e "    ${RED}✗${NC} $filename \033[0;90m(ignored)\033[0m"
+        echo -e "    ${_CLI_RED}✗${_CLI_NC} $filename \033[0;90m(ignored)\033[0m"
       else
-        echo -e "    ${GREEN}✓${NC} $filename"
+        echo -e "    ${_CLI_GREEN}✓${_CLI_NC} $filename"
       fi
     done
   done
@@ -508,10 +511,10 @@ _customrc_debug_status() {
   local debug_mode=$(grep '^CUSTOMRC_DEBUG_MODE=' "$configs_path" | cut -d= -f2)
 
   echo ""
-  echo -e "${PURPLE}Debug Status:${NC}"
+  echo -e "${_CLI_PURPLE}Debug Status:${_CLI_NC}"
   echo ""
   if [[ "$debug_mode" == "true" ]]; then
-    echo -e "  Debug mode: ${GREEN}enabled${NC}"
+    echo -e "  Debug mode: ${_CLI_GREEN}enabled${_CLI_NC}"
   else
     echo -e "  Debug mode: \033[0;90mdisabled\033[0m"
   fi
@@ -544,11 +547,11 @@ _customrc_status() {
   local cache_path="$(_customrc_get_cache_path)"
 
   echo ""
-  _customrc_divider "$PURPLE" "CustomRC Status"
+  _customrc_divider "$_CLI_PURPLE" "CustomRC Status"
   echo ""
 
   # Version
-  echo -e "  Version:     ${CYAN}${CUSTOMRC_VERSION:-unknown}${NC}"
+  echo -e "  Version:     ${_CLI_CYAN}${CUSTOMRC_VERSION:-unknown}${_CLI_NC}"
 
   # Paths
   echo -e "  Path:        $customrc_path"
@@ -558,7 +561,7 @@ _customrc_status() {
   # Debug mode
   local debug_mode=$(grep '^CUSTOMRC_DEBUG_MODE=' "$customrc_path/configs.sh" 2>/dev/null | cut -d= -f2)
   if [[ "$debug_mode" == "true" ]]; then
-    echo -e "  Debug:       ${GREEN}enabled${NC}"
+    echo -e "  Debug:       ${_CLI_GREEN}enabled${_CLI_NC}"
   else
     echo -e "  Debug:       \033[0;90mdisabled\033[0m"
   fi
@@ -567,7 +570,7 @@ _customrc_status() {
   if [[ -d "$modules_path/.git" ]]; then
     local branch=$(cd "$modules_path" && git branch --show-current 2>/dev/null)
     local status=$(cd "$modules_path" && git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
-    echo -e "  Sync:        ${GREEN}git${NC} (branch: $branch, $status uncommitted)"
+    echo -e "  Sync:        ${_CLI_GREEN}git${_CLI_NC} (branch: $branch, $status uncommitted)"
   else
     echo -e "  Sync:        \033[0;90mnot a git repo\033[0m"
   fi
@@ -579,7 +582,7 @@ _customrc_status() {
   echo -e "  Modules:     Global: $global_count, Darwin: $darwin_count, Linux: $linux_count"
 
   echo ""
-  _customrc_divider "$PURPLE"
+  _customrc_divider "$_CLI_PURPLE"
   echo ""
 }
 
@@ -591,7 +594,7 @@ _customrc_doctor() {
   local errors=0
 
   echo ""
-  _customrc_divider "$PURPLE" "CustomRC Doctor"
+  _customrc_divider "$_CLI_PURPLE" "CustomRC Doctor"
   echo ""
 
   # Check CUSTOMRC_PATH
@@ -669,7 +672,7 @@ _customrc_doctor() {
   fi
 
   echo ""
-  _customrc_divider "$PURPLE"
+  _customrc_divider "$_CLI_PURPLE"
   echo ""
 
   if [[ "$errors" -eq 0 ]]; then
@@ -689,12 +692,12 @@ _customrc_help() {
 
   if [[ -z "$command" ]]; then
     echo ""
-    echo -e "${PURPLE}CustomRC${NC} - Modular shell configuration manager"
+    echo -e "${_CLI_PURPLE}CustomRC${_CLI_NC} - Modular shell configuration manager"
     echo ""
-    echo -e "\033[1mUsage:${NC}"
+    echo -e "\033[1mUsage:${_CLI_NC}"
     echo "  customrc <command> [subcommand] [options]"
     echo ""
-    echo -e "\033[1mCommands:${NC}"
+    echo -e "\033[1mCommands:${_CLI_NC}"
     echo "  sync     Manage rc-modules git synchronization"
     echo "  cache    Manage monolithic cache"
     echo "  modules  List, edit, or create modules"
@@ -704,7 +707,7 @@ _customrc_help() {
     echo "  version  Show version"
     echo "  help     Show help for a command"
     echo ""
-    echo -e "\033[1mExamples:${NC}"
+    echo -e "\033[1mExamples:${_CLI_NC}"
     echo "  customrc sync status        # Check rc-modules git status"
     echo "  customrc cache rebuild      # Rebuild monolithic cache"
     echo "  customrc modules list       # List all modules"
@@ -718,12 +721,12 @@ _customrc_help() {
   case "$command" in
     sync)
       echo ""
-      echo -e "\033[1mCustomRC Sync${NC} - Manage rc-modules git synchronization"
+      echo -e "\033[1mCustomRC Sync${_CLI_NC} - Manage rc-modules git synchronization"
       echo ""
-      echo -e "\033[1mUsage:${NC}"
+      echo -e "\033[1mUsage:${_CLI_NC}"
       echo "  customrc sync <subcommand> [options]"
       echo ""
-      echo -e "\033[1mSubcommands:${NC}"
+      echo -e "\033[1mSubcommands:${_CLI_NC}"
       echo "  init [url]  Initialize rc-modules as git repo, or clone from URL"
       echo "  push        Push rc-modules to remote"
       echo "  pull        Pull latest rc-modules from remote"
@@ -732,12 +735,12 @@ _customrc_help() {
       ;;
     cache)
       echo ""
-      echo -e "\033[1mCustomRC Cache${NC} - Manage monolithic cache"
+      echo -e "\033[1mCustomRC Cache${_CLI_NC} - Manage monolithic cache"
       echo ""
-      echo -e "\033[1mUsage:${NC}"
+      echo -e "\033[1mUsage:${_CLI_NC}"
       echo "  customrc cache <subcommand> [options]"
       echo ""
-      echo -e "\033[1mSubcommands:${NC}"
+      echo -e "\033[1mSubcommands:${_CLI_NC}"
       echo "  clear [name]  Clear all caches or a specific cache"
       echo "  rebuild       Rebuild the monolithic cache"
       echo "  status        Show cache status and info"
@@ -745,32 +748,95 @@ _customrc_help() {
       ;;
     modules)
       echo ""
-      echo -e "\033[1mCustomRC Modules${NC} - Manage shell modules"
+      echo -e "\033[1mCustomRC Modules${_CLI_NC} - Manage shell modules"
       echo ""
-      echo -e "\033[1mUsage:${NC}"
+      echo -e "\033[1mUsage:${_CLI_NC}"
       echo "  customrc modules <subcommand> [options]"
       echo ""
-      echo -e "\033[1mSubcommands:${NC}"
+      echo -e "\033[1mSubcommands:${_CLI_NC}"
       echo "  list        List all modules with load status"
       echo "  edit <name> Open a module in \$EDITOR"
       echo "  new <name>  Create a new module from template"
       echo ""
-      echo -e "\033[1mExamples:${NC}"
+      echo -e "\033[1mExamples:${_CLI_NC}"
       echo "  customrc modules new Global/my-aliases"
       echo "  customrc modules edit docker.sh"
       echo ""
       ;;
     debug)
       echo ""
-      echo -e "\033[1mCustomRC Debug${NC} - Toggle debug mode"
+      echo -e "\033[1mCustomRC Debug${_CLI_NC} - Toggle debug mode"
       echo ""
-      echo -e "\033[1mUsage:${NC}"
+      echo -e "\033[1mUsage:${_CLI_NC}"
       echo "  customrc debug <subcommand>"
       echo ""
-      echo -e "\033[1mSubcommands:${NC}"
+      echo -e "\033[1mSubcommands:${_CLI_NC}"
       echo "  on      Enable debug mode"
       echo "  off     Disable debug mode"
       echo "  status  Show current debug mode status"
+      echo ""
+      ;;
+    status)
+      echo ""
+      echo -e "\033[1mCustomRC Status${_CLI_NC} - Show overall status summary"
+      echo ""
+      echo -e "\033[1mUsage:${_CLI_NC}"
+      echo "  customrc status"
+      echo ""
+      echo -e "\033[1mDisplays:${_CLI_NC}"
+      echo "  - CustomRC version"
+      echo "  - Installation paths (customrc, modules, cache)"
+      echo "  - Debug mode status"
+      echo "  - Git sync status of rc-modules"
+      echo "  - Module counts by category (Global, Darwin, Linux)"
+      echo ""
+      ;;
+    doctor)
+      echo ""
+      echo -e "\033[1mCustomRC Doctor${_CLI_NC} - Run health checks"
+      echo ""
+      echo -e "\033[1mUsage:${_CLI_NC}"
+      echo "  customrc doctor"
+      echo ""
+      echo -e "\033[1mChecks:${_CLI_NC}"
+      echo "  - CustomRC directory exists"
+      echo "  - rc-modules directory exists"
+      echo "  - Required helpers are present (cache.sh, monolithic.sh)"
+      echo "  - Module syntax validation (bash -n)"
+      echo "  - Cache directory is writable"
+      echo "  - configs.sh exists"
+      echo ""
+      echo -e "\033[1mExit Codes:${_CLI_NC}"
+      echo "  0  All checks passed"
+      echo "  1  One or more issues found"
+      echo ""
+      ;;
+    version)
+      echo ""
+      echo -e "\033[1mCustomRC Version${_CLI_NC} - Show version information"
+      echo ""
+      echo -e "\033[1mUsage:${_CLI_NC}"
+      echo "  customrc version"
+      echo "  customrc -v"
+      echo "  customrc --version"
+      echo ""
+      echo -e "\033[1mOutput:${_CLI_NC}"
+      echo "  Displays the current CustomRC version from \$CUSTOMRC_VERSION"
+      echo ""
+      ;;
+    help)
+      echo ""
+      echo -e "\033[1mCustomRC Help${_CLI_NC} - Show help for commands"
+      echo ""
+      echo -e "\033[1mUsage:${_CLI_NC}"
+      echo "  customrc help [command]"
+      echo "  customrc -h"
+      echo "  customrc --help"
+      echo ""
+      echo -e "\033[1mExamples:${_CLI_NC}"
+      echo "  customrc help         # Show general help"
+      echo "  customrc help sync    # Show sync command help"
+      echo "  customrc help modules # Show modules command help"
       echo ""
       ;;
     *)
