@@ -538,6 +538,106 @@ _customrc_debug() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Update Command
+# ─────────────────────────────────────────────────────────────────────────────
+
+_customrc_update() {
+  local customrc_path="$(_customrc_get_path)"
+  local force="${1:-}"
+
+  # Check if CustomRC directory is a git repo
+  if [[ ! -d "$customrc_path/.git" ]]; then
+    _customrc_error "CustomRC is not a git repository: $customrc_path"
+    _customrc_info "If you installed manually, please update using your original method."
+    return 1
+  fi
+
+  # Check for uncommitted changes
+  local uncommitted=$(cd "$customrc_path" && git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$uncommitted" -gt 0 && "$force" != "--force" ]]; then
+    _customrc_warn "You have $uncommitted uncommitted change(s) in CustomRC"
+    echo ""
+    (cd "$customrc_path" && git status --short)
+    echo ""
+    _customrc_info "Commit or stash your changes first, or use 'customrc update --force'"
+    return 1
+  fi
+
+  # Get current branch
+  local branch=$(cd "$customrc_path" && git branch --show-current 2>/dev/null)
+  if [[ -z "$branch" ]]; then
+    _customrc_error "Could not determine current branch"
+    return 1
+  fi
+
+  # Check if remote exists
+  local remote=$(cd "$customrc_path" && git remote 2>/dev/null | head -n1)
+  if [[ -z "$remote" ]]; then
+    _customrc_error "No git remote configured"
+    _customrc_info "Add a remote with: cd $customrc_path && git remote add origin <url>"
+    return 1
+  fi
+
+  echo ""
+  _customrc_divider "$_CLI_PURPLE" "CustomRC Update"
+  echo ""
+
+  # Fetch latest
+  _customrc_info "Fetching from $remote/$branch..."
+  if ! (cd "$customrc_path" && git fetch "$remote" "$branch" 2>&1); then
+    _customrc_error "Failed to fetch updates"
+    return 1
+  fi
+
+  # Check if there are updates
+  local local_rev=$(cd "$customrc_path" && git rev-parse HEAD 2>/dev/null)
+  local remote_rev=$(cd "$customrc_path" && git rev-parse "$remote/$branch" 2>/dev/null)
+
+  if [[ "$local_rev" == "$remote_rev" ]]; then
+    _customrc_success "CustomRC is already up to date"
+    echo ""
+    _customrc_divider "$_CLI_PURPLE"
+    echo ""
+    return 0
+  fi
+
+  # Show what will be updated
+  local commits_behind=$(cd "$customrc_path" && git rev-list --count HEAD.."$remote/$branch" 2>/dev/null)
+  _customrc_info "Found $commits_behind new commit(s)"
+  echo ""
+  (cd "$customrc_path" && git log --oneline HEAD.."$remote/$branch" | head -10)
+  echo ""
+
+  # Pull updates
+  _customrc_info "Pulling updates..."
+  if [[ "$force" == "--force" ]]; then
+    if ! (cd "$customrc_path" && git reset --hard "$remote/$branch" 2>&1); then
+      _customrc_error "Failed to update"
+      return 1
+    fi
+  else
+    if ! (cd "$customrc_path" && git pull "$remote" "$branch" 2>&1); then
+      _customrc_error "Failed to pull updates"
+      return 1
+    fi
+  fi
+
+  _customrc_success "Updated CustomRC to latest version"
+
+  # Rebuild cache
+  echo ""
+  _customrc_info "Rebuilding cache..."
+  _customrc_cache_rebuild
+
+  echo ""
+  _customrc_divider "$_CLI_PURPLE"
+  echo ""
+
+  _customrc_success "Update complete!"
+  _customrc_info "Restart your shell to apply changes"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Info Commands
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -860,6 +960,7 @@ customrc() {
     cache)   _customrc_cache "$@" ;;
     modules) _customrc_modules "$@" ;;
     debug)   _customrc_debug "$@" ;;
+    update)  _customrc_update "$@" ;;
     status)  _customrc_status ;;
     doctor)  _customrc_doctor ;;
     version) _customrc_version ;;
