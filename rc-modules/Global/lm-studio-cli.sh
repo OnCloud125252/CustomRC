@@ -1,1 +1,0 @@
-export PATH="$PATH:/Users/oncloud/.lmstudio/bin"

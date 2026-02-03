@@ -1,1 +1,0 @@
-alias docker-utils="ln -s ~/Projects/Docker/Utils ./docker-utils"

@@ -1,1 +1,0 @@
-export PATH=$PATH:"/Applications/MongoDB Tools/bin"
