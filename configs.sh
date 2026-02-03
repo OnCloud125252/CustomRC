@@ -3,19 +3,19 @@ CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM=${CUSTOMRC_DISABLE_PROMPT_FIX_AT_BOTTOM:-f
 
 # Global ignore list (applies to all platforms)
 CUSTOMRC_GLOBAL_IGNORE_LIST=(
-  "zoxide.sh"
-  "podman.sh"
-  "python-virtual-environment.sh"
-  "nvm.sh"
-  "thefuck.sh"
+  zoxide.sh
+  podman.sh
+  python-virtual-environment.sh
+  nvm.sh
+  thefuck.sh
 )
 
 # Platform-specific ignore lists
 CUSTOMRC_DARWIN_IGNORE_LIST=(
-  "cursor.sh"
-  "iterm.sh"
-  "jankyborders.sh"
-  "dnslookup.sh"
+  cursor.sh
+  iterm.sh
+  jankyborders.sh
+  dnslookup.sh
 )
 
 CUSTOMRC_LINUX_IGNORE_LIST=()
