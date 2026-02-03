@@ -211,15 +211,52 @@ See [Writing Optimized Modules](optimized-modules.md) for detailed guidance.
 ## Updating CustomRC
 
 ```bash
-cd ~/.customrc
-git pull
+customrc update
 ```
 
-The monolithic cache will auto-regenerate on next shell start.
+This command will:
+- Check if CustomRC is a git repository
+- Warn about uncommitted changes (use `--force` to override)
+- Fetch and show new commits before pulling
+- Pull updates and rebuild cache automatically
+
+If you have uncommitted changes and want to update anyway:
+
+```bash
+customrc update --force
+```
 
 Your personal modules in `rc-modules/` are unaffected by updates.
 
+## Checking Status
+
+To see an overview of your CustomRC installation:
+
+```bash
+customrc status
+```
+
+This displays:
+- Version, paths, and debug mode status
+- Git sync status of rc-modules
+- Module counts by category (Global, Darwin, Linux)
+
 ## Troubleshooting
+
+### Running Health Checks
+
+Use the doctor command to diagnose common issues:
+
+```bash
+customrc doctor
+```
+
+This checks:
+- CustomRC directory exists
+- rc-modules directory is present
+- Required helpers are available
+- Module syntax is valid
+- Cache is writable
 
 ### Shell startup is slow
 
@@ -233,6 +270,7 @@ Your personal modules in `rc-modules/` are unaffected by updates.
 2. Verify the file is in the correct directory for your OS
 3. Check if it's in an ignore list in `configs.sh`
 4. Look for syntax errors: `bash -n rc-modules/Global/yourmodule.sh`
+5. Run `customrc doctor` to check for configuration issues
 
 ### Changes not taking effect
 
