@@ -63,6 +63,19 @@ CustomRC comes with a built-in CLI tool to manage your configuration.
 customrc help
 ```
 
+### Quick Status
+
+```bash
+# Show overall status
+customrc status
+
+# Run health checks
+customrc doctor
+
+# Update CustomRC to latest version
+customrc update
+```
+
 ### Managing Modules
 
 Easily manage your modules directly from the command line:
