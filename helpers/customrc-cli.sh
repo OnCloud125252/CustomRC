@@ -70,6 +70,14 @@ _customrc_get_cache_path() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Platform Detection
+# ─────────────────────────────────────────────────────────────────────────────
+
+_customrc_is_darwin() {
+  [[ "$(uname)" == "Darwin" ]]
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Sync Commands
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -172,6 +180,7 @@ _customrc_sync() {
     push)   _customrc_sync_push ;;
     pull)   _customrc_sync_pull ;;
     status) _customrc_sync_status ;;
+    help|-h|--help) _customrc_help sync ;;
     *)
       _customrc_error "Unknown sync subcommand: $subcommand"
       echo "Usage: customrc sync <init|push|pull|status>"
@@ -236,7 +245,12 @@ _customrc_cache_status() {
 
   # Show monolithic cache info
   if [[ -f "$monolithic_cache" ]]; then
-    local size=$(stat -f %z "$monolithic_cache" 2>/dev/null || echo 0)
+    local size
+    if _customrc_is_darwin; then
+      size=$(stat -f %z "$monolithic_cache" 2>/dev/null || echo 0)
+    else
+      size=$(stat -c %s "$monolithic_cache" 2>/dev/null || echo 0)
+    fi
     local size_human
     if [[ "$size" -gt 1048576 ]]; then
       size_human="$((size / 1048576)) MB"
@@ -246,7 +260,12 @@ _customrc_cache_status() {
       size_human="${size} B"
     fi
 
-    local file_time=$(stat -f %m "$monolithic_cache" 2>/dev/null || echo 0)
+    local file_time
+    if _customrc_is_darwin; then
+      file_time=$(stat -f %m "$monolithic_cache" 2>/dev/null || echo 0)
+    else
+      file_time=$(stat -c %Y "$monolithic_cache" 2>/dev/null || echo 0)
+    fi
     local now=$(date +%s)
     local age=$((now - file_time))
     local age_human
@@ -288,6 +307,7 @@ _customrc_cache() {
     clear)   _customrc_cache_clear "$@" ;;
     rebuild) _customrc_cache_rebuild ;;
     status)  _customrc_cache_status ;;
+    help|-h|--help) _customrc_help cache ;;
     *)
       _customrc_error "Unknown cache subcommand: $subcommand"
       echo "Usage: customrc cache <clear|rebuild|status>"
@@ -363,44 +383,57 @@ _customrc_modules_list() {
 
 _customrc_modules_edit() {
   local name="${1:-}"
+  local editor="${2:-${EDITOR:-vim}}"
   local modules_path="$(_customrc_get_modules_path)"
 
   if [[ -z "$name" ]]; then
     _customrc_error "Module name required"
-    echo "Usage: customrc modules edit <name>"
+    echo "Usage: customrc modules edit <[category/]name> [editor]"
+    echo "Categories: Global (default), Darwin, Linux"
     return 1
   fi
+
+  local category="Global"
+  local module_name="$name"
+
+  # Parse category/name format
+  if [[ "$name" == */* ]]; then
+    category="${name%%/*}"
+    module_name="${name#*/}"
+  fi
+
+  # Validate category
+  case "$category" in
+    Global|Darwin|Linux) ;;
+    *)
+      _customrc_error "Invalid category: $category"
+      echo "Valid categories: Global, Darwin, Linux"
+      return 1
+      ;;
+  esac
 
   # Add .sh extension if not provided
-  [[ "$name" != *.sh ]] && name="${name}.sh"
+  [[ "$module_name" != *.sh ]] && module_name="${module_name}.sh"
 
-  # Search for the module in all directories
-  local found_path=""
-  for dir in Global Darwin Linux; do
-    local check_path="$modules_path/$dir/$name"
-    if [[ -f "$check_path" ]]; then
-      found_path="$check_path"
-      break
-    fi
-  done
+  local target_path="$modules_path/$category/$module_name"
 
-  if [[ -z "$found_path" ]]; then
-    _customrc_error "Module not found: $name"
-    _customrc_info "Search paths: Global/, Darwin/, Linux/"
+  if [[ ! -f "$target_path" ]]; then
+    _customrc_error "Module not found: $target_path"
     return 1
   fi
 
-  _customrc_info "Opening $found_path..."
-  ${EDITOR:-vim} "$found_path"
+  _customrc_info "Opening $target_path with $editor..."
+  "$editor" "$target_path"
 }
 
 _customrc_modules_new() {
   local name="${1:-}"
+  local editor="${2:-${EDITOR:-vim}}"
   local modules_path="$(_customrc_get_modules_path)"
 
   if [[ -z "$name" ]]; then
     _customrc_error "Module name required"
-    echo "Usage: customrc modules new <category/name> or <name>"
+    echo "Usage: customrc modules new <[category/]name> [editor]"
     echo "Example: customrc modules new Global/my-aliases"
     return 1
   fi
@@ -446,12 +479,13 @@ _customrc_modules_new() {
 # Created: $(date +%Y-%m-%d)
 
 # Add your aliases, functions, and configurations below
+# See docs/optimized-modules.md for detailed guidance on writing optimized modules.
 
 EOF
 
   _customrc_success "Created module: $target_path"
-  _customrc_info "Opening in editor..."
-  ${EDITOR:-vim} "$target_path"
+  _customrc_info "Opening $target_path with $editor..."
+  "$editor" "$target_path"
 }
 
 _customrc_modules() {
@@ -462,6 +496,7 @@ _customrc_modules() {
     list) _customrc_modules_list ;;
     edit) _customrc_modules_edit "$@" ;;
     new)  _customrc_modules_new "$@" ;;
+    help|-h|--help) _customrc_help modules ;;
     *)
       _customrc_error "Unknown modules subcommand: $subcommand"
       echo "Usage: customrc modules <list|edit|new>"
@@ -482,7 +517,11 @@ _customrc_debug_on() {
     return 1
   fi
 
-  sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
+  if _customrc_is_darwin; then
+    sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
+  else
+    sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
+  fi
   _customrc_success "Debug mode enabled"
   _customrc_info "Restart your shell to apply changes"
 }
@@ -495,7 +534,11 @@ _customrc_debug_off() {
     return 1
   fi
 
-  sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
+  if _customrc_is_darwin; then
+    sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
+  else
+    sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
+  fi
   _customrc_success "Debug mode disabled"
   _customrc_info "Restart your shell to apply changes"
 }
@@ -529,6 +572,7 @@ _customrc_debug() {
     on)     _customrc_debug_on ;;
     off)    _customrc_debug_off ;;
     status) _customrc_debug_status ;;
+    help|-h|--help) _customrc_help debug ;;
     *)
       _customrc_error "Unknown debug subcommand: $subcommand"
       echo "Usage: customrc debug <on|off|status>"
@@ -802,6 +846,7 @@ _customrc_help() {
     echo "  cache    Manage monolithic cache"
     echo "  modules  List, edit, or create modules"
     echo "  debug    Toggle debug mode"
+    echo "  update   Update CustomRC to latest version"
     echo "  status   Show overall status summary"
     echo "  doctor   Run health checks"
     echo "  version  Show version"
@@ -854,13 +899,15 @@ _customrc_help() {
       echo "  customrc modules <subcommand> [options]"
       echo ""
       echo -e "\033[1mSubcommands:${_CLI_NC}"
-      echo "  list        List all modules with load status"
-      echo "  edit <name> Open a module in \$EDITOR"
-      echo "  new <name>  Create a new module from template"
+      echo "  list              List all modules with load status"
+      echo "  edit <name> [editor]  Open a module in editor (default: \$EDITOR or vim)"
+      echo "  new <name>        Create a new module from template"
       echo ""
       echo -e "\033[1mExamples:${_CLI_NC}"
       echo "  customrc modules new Global/my-aliases"
       echo "  customrc modules edit docker.sh"
+      echo "  customrc modules edit docker.sh code"
+      echo "  customrc modules edit docker.sh nano"
       echo ""
       ;;
     debug)
@@ -874,6 +921,23 @@ _customrc_help() {
       echo "  on      Enable debug mode"
       echo "  off     Disable debug mode"
       echo "  status  Show current debug mode status"
+      echo ""
+      ;;
+    update)
+      echo ""
+      echo -e "\033[1mCustomRC Update${_CLI_NC} - Update CustomRC to latest version"
+      echo ""
+      echo -e "\033[1mUsage:${_CLI_NC}"
+      echo "  customrc update [--force]"
+      echo ""
+      echo -e "\033[1mOptions:${_CLI_NC}"
+      echo "  --force   Force update even with uncommitted changes"
+      echo ""
+      echo -e "\033[1mBehavior:${_CLI_NC}"
+      echo "  - Fetches latest changes from remote"
+      echo "  - Shows new commits before pulling"
+      echo "  - Pulls updates and rebuilds cache"
+      echo "  - Warns about uncommitted changes (use --force to override)"
       echo ""
       ;;
     status)
