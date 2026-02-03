@@ -58,25 +58,28 @@ CUSTOMRC_LINUX_IGNORE_LIST=()
 
 ## Cache Management
 
+Use the `customrc cache` CLI commands to manage caches. Run `customrc cache status` to view current cache information.
+
 ### Clearing Caches
 
-Run `cache_clear` to remove all caches, or `cache_clear <name>` for a specific one:
+Use `customrc cache clear` to remove all caches, or specify a name to clear a specific one:
 
 ```bash
 # Clear all caches
-cache_clear
+customrc cache clear
 
 # Clear specific cache
-cache_clear fzf
+customrc cache clear fzf
 ```
 
 Caches are stored in `~/.cache/customrc/`.
 
 ### Force Regenerating Monolithic Cache
 
-Delete the cache file and restart your shell:
+Use the CLI to rebuild the monolithic cache:
 
 ```bash
-rm ~/.cache/customrc/monolithic.sh
-exec zsh
+customrc cache rebuild
 ```
+
+This forces regeneration of the monolithic cache file.
