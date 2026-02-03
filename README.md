@@ -1,20 +1,27 @@
 # CustomRC
 
-**Breakdown massive rc files like bashrc or zshrc into manageable modules and easily control which modules to be loaded on startup.**
+*Break down massive rc files like bashrc or zshrc into manageable modules with automatic caching for fast shell startup.*
 
-- [Overview](#overview)
-- [Features](#features)
-  - [Caching System](#caching-system)
-  - [Benchmarking](#benchmarking)
-- [Project Structure](#project-structure)
-- [FAQs](#faqs)
-- [Installation](#installation)
+- [CustomRC](#customrc)
+  - [Overview](#overview)
+  - [Features](#features)
+    - [Debug Mode](#debug-mode)
+    - [Production Mode](#production-mode)
+    - [Caching System](#caching-system)
+  - [Project Structure](#project-structure)
+  - [FAQs](#faqs)
+      - [Is this safe to use on my machine?](#is-this-safe-to-use-on-my-machine)
+      - [How do I ignore slow modules?](#how-do-i-ignore-slow-modules)
+      - [How do I clear the cache?](#how-do-i-clear-the-cache)
+      - [How do I force regenerate the monolithic cache?](#how-do-i-force-regenerate-the-monolithic-cache)
+      - [How do I add a new module?](#how-do-i-add-a-new-module)
+  - [Installation](#installation)
 
 ## Overview
 
-RC stands for "run command". It is a file that contains commands to be executed. Usually, it contains the commands to be executed when the shell is started.
+RC stands for "run command"—a file containing commands executed when the shell starts. This project splits your monolithic shell configuration into smaller, organized files based on functionality or operating system.
 
-This project allows you to split your monolithic shell configuration into smaller, organized files based on functionality or operating system.
+You get the maintainability of modular configs with the performance of a single cached file.
 
 Reference: [Wiki/RUNCOM](https://en.wikipedia.org/wiki/RUNCOM)
 
@@ -22,41 +29,43 @@ Reference: [Wiki/RUNCOM](https://en.wikipedia.org/wiki/RUNCOM)
 
 - **Modular Configuration**: Break down large `.zshrc` or `.bashrc` files into smaller, maintainable modules.
 - **Platform Specific Loading**: Automatically load modules based on your OS (Global, Darwin, Linux).
-- **Startup Control**: Easily manage which modules are loaded when your shell starts.
-- **Performance Optimized**: Modules use lazy loading, caching, and conditional loading for fast shell startup. See [Writing Optimized Modules](docs/optimized-modules.md).
+- **Dual Mode Operation**: Debug mode for development with timing, production mode for instant startup.
+- **Smart Caching**: Monolithic cache auto-regenerates when source files change.
+- **Ignore Lists**: Easily disable slow or unused modules per platform.
+
+See [Writing Optimized Modules](docs/optimized-modules.md) for performance best practices.
+
+### Debug Mode
+
+Enable verbose output with per-module timing by setting `CUSTOMRC_DEBUG_MODE=true` in `configs.sh`:
+
+```
+[i] Initializing Customrc...
+━━━━[customrc]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Loaded: fzf.sh [Global] (3ms)
+✓ Loaded: bat.sh [Global] (1ms)
+✗ Ignored: nvm.sh [Global]
+✓ Loaded: brew.sh [Darwin] (2ms)
+━━━━[customrc]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[i] Initialization complete
+    ✓ Loaded: 24
+    ✗ Ignored: 5
+    ⚠ Duration: 89ms
+```
+
+### Production Mode
+
+When `CUSTOMRC_DEBUG_MODE=false`, CustomRC generates a monolithic cache file combining all modules. This cache:
+
+- Auto-regenerates when any module or `configs.sh` changes
+- Sources instantly without per-file overhead
+- Lives at `~/.cache/customrc/monolithic.sh`
 
 ### Caching System
 
-CustomRC includes a centralized caching utility (`helpers/cache.sh`) to speed up expensive tool initializations:
+The centralized caching utility (`helpers/cache.sh`) speeds up expensive tool initializations with binary version checking, TTL support, and automatic regeneration.
 
-```bash
-# Cache a tool's init script with automatic binary version checking
-cache_init "fzf" "fzf --zsh" --check-binary "$(command -v fzf)"
-
-# Cache with TTL expiration
-cache_init "myconfig" "generate-config" --ttl "7d"
-
-# Management commands
-cache_list      # View all caches with status
-cache_clear     # Clear all caches
-cache_refresh   # Force regenerate a specific cache
-```
-
-**Features:**
-- Binary version checking (regenerate when tool updates)
-- TTL support (`1h`, `7d`, `30m`, etc.)
-- Metadata tracking for debugging
-- Graceful fallback to stale cache on regeneration failure
-
-### Benchmarking
-
-Use `benchmark.sh` to measure your shell startup time and compare against a monolithic build:
-
-```bash
-./benchmark.sh
-```
-
-This generates a monolithic version of your config and compares load times.
+See [Caching System](docs/caching.md) for full API documentation and usage examples.
 
 ## Project Structure
 
@@ -64,11 +73,12 @@ This generates a monolithic version of your config and compares load times.
 ~/.customrc/
 ├── customrc.sh          # Main entry point
 ├── configs.sh           # Configuration and ignore lists
-├── benchmark.sh         # Performance testing tool
 ├── helpers/
-│   ├── cache.sh         # Caching utility
+│   ├── cache.sh         # Caching utility with TTL and binary checking
+│   ├── monolithic.sh    # Production mode cache generator
+│   ├── loader.sh        # Debug mode module loader with timing
 │   ├── logging.sh       # Output formatting
-│   ├── timing.sh        # Execution timing
+│   ├── timing.sh        # Execution timing utilities
 │   └── styles.sh        # Color and style definitions
 ├── rc-modules/
 │   ├── Global/          # Cross-platform modules
@@ -81,20 +91,42 @@ This generates a monolithic version of your config and compares load times.
 ## FAQs
 
 #### Is this safe to use on my machine?
-Notice that the rc file in this repository is for personal use. Some modules/tools may not work in your environment or may conflict with your existing setup. You should take a look at the modules in `~/.customrc/rc-modules/Global`, `~/.customrc/rc-modules/Darwin` and `~/.customrc/rc-modules/Linux` before using it to ensure compatibility.
+This repository contains personal configurations. Some modules may not work in your environment or may conflict with your existing setup. Review the modules in `rc-modules/Global`, `rc-modules/Darwin`, and `rc-modules/Linux` before using.
 
 #### How do I ignore slow modules?
-Add module filenames to the ignore list in `configs.sh`:
+Add module filenames to the ignore lists in `configs.sh`:
 
 ```bash
 CUSTOMRC_GLOBAL_IGNORE_LIST=(
   "nvm.sh"       # 200ms+ - use fnm instead
   "thefuck.sh"   # 100ms+ - lazy load if needed
 )
+
+CUSTOMRC_DARWIN_IGNORE_LIST=(
+  "iterm.sh"     # Not needed if using other terminal
+)
+
+CUSTOMRC_LINUX_IGNORE_LIST=()
 ```
 
 #### How do I clear the cache?
 Run `cache_clear` to remove all caches, or `cache_clear <name>` for a specific one. Caches are stored in `~/.cache/customrc/`.
+
+#### How do I force regenerate the monolithic cache?
+Delete the cache file and restart your shell:
+
+```bash
+rm ~/.cache/customrc/monolithic.sh
+exec zsh
+```
+
+#### How do I add a new module?
+Create a `.sh` file in the appropriate directory:
+- `rc-modules/Global/` for cross-platform modules
+- `rc-modules/Darwin/` for macOS-specific modules
+- `rc-modules/Linux/` for Linux-specific modules
+
+The module will be automatically loaded on next shell start.
 
 ## Installation
 
