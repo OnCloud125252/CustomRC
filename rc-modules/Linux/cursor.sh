@@ -1,2 +1,2 @@
-alias _code=$(which code)
-alias code=$(which cursor)
+alias _code="/usr/bin/code"
+alias code="cursor"

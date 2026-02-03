@@ -1,1 +1,1 @@
-alias finder="$(which open)"
+alias finder="open"

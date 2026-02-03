@@ -1,4 +1,4 @@
-eval "$(fzf --zsh)"
+# Only one initialization needed (was duplicated)
 source <(fzf --zsh)
 
 export FZF_COMPLETION_TRIGGER='**'

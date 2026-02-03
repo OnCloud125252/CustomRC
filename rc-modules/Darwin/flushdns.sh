@@ -1,1 +1,4 @@
-alias flushdns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
+flushdns() {
+  sudo dscacheutil -flushcache
+  sudo killall -HUP mDNSResponder
+}
