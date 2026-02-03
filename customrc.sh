@@ -6,6 +6,9 @@ CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 
 source "$CURRENT_PATH/configs.sh"
 
+# Load CLI (available in both debug and production modes)
+source "$CUSTOMRC_HELPERS_PATH/customrc-cli.sh"
+
 # Check if rc-modules directory exists
 if [[ ! -d "$CUSTOMRC_RC_MODULES_PATH" ]]; then
   echo ""
