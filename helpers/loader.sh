@@ -19,7 +19,7 @@ add_file_to_combined() {
     echo ""
     echo '_file_end_time=$(date +%s%N)'
     echo '_file_duration=$(( (_file_end_time - _file_start_time) / 1000000 ))'
-    echo 'if [[ "$CUSTOMRC_SILENT_OUTPUT" != true ]]; then'
+    echo 'if [[ "$CUSTOMRC_DEBUG_MODE" == true ]]; then'
     echo '  if (( _file_duration < 10 )); then _duration_color="'"$GREEN"'"'
     echo '  elif (( _file_duration < 50 )); then _duration_color="'"$YELLOW"'"'
     echo '  else _duration_color="'"$RED"'"; fi'
