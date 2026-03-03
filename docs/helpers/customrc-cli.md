@@ -601,6 +601,7 @@ customrc modules edit <TAB> # shows available modules
 
 ## See Also
 
+- [autocomplete.md](./autocomplete.md) - Shell completion system
 - [caching.md](./caching.md) - Cache system details
 - [monolithic.md](./monolithic.md) - Monolithic cache generation
 - [../version.md](../version.md) - Version system documentation

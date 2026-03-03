@@ -157,6 +157,7 @@ See the [User Guide: Syncing Across Machines](docs/user-guide.md#syncing-across-
 | [Configuration](docs/configuration.md) | Operating modes, ignore lists, cache management |
 | [Writing Optimized Modules](docs/optimized-modules.md) | Performance best practices |
 | [Caching System](docs/caching.md) | Cache helper API documentation |
+| [Autocomplete](docs/helpers/autocomplete.md) | Shell completion system documentation |
 
 ## Contributing
 
