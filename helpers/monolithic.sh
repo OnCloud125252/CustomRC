@@ -12,13 +12,14 @@ _monolithic_needs_rebuild() {
 
   local cache_mtime
   cache_mtime=$(stat -f %m "$cache_file" 2>/dev/null || stat -c %Y "$cache_file" 2>/dev/null)
-  [[ -z "$cache_mtime" ]] && return 0
+  : ${cache_mtime:=0}
 
   # Check configs.sh
   local config_mtime
   if [[ -f "$CURRENT_PATH/configs.sh" ]]; then
     config_mtime=$(stat -f %m "$CURRENT_PATH/configs.sh" 2>/dev/null || stat -c %Y "$CURRENT_PATH/configs.sh" 2>/dev/null)
-    [[ -n "$config_mtime" && "$config_mtime" -gt "$cache_mtime" ]] && return 0
+    : ${config_mtime:=0}
+    [[ "$config_mtime" -gt "$cache_mtime" ]] && return 0
   fi
 
   # Check all module directories
@@ -28,7 +29,8 @@ _monolithic_needs_rebuild() {
     for file in "$dir"/*; do
       [[ ! -f "$file" ]] && continue
       file_mtime=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
-      [[ -n "$file_mtime" && "$file_mtime" -gt "$cache_mtime" ]] && return 0
+      : ${file_mtime:=0}
+      [[ "$file_mtime" -gt "$cache_mtime" ]] && return 0
     done
   done
 
