@@ -28,7 +28,13 @@ _cache_is_expired() {
   local cache_file="$1" ttl_seconds="$2"
   [[ -z "$ttl_seconds" || "$ttl_seconds" -eq 0 ]] && return 1
 
-  local file_age=$(( $(date +%s) - $(stat -f %m "$cache_file" 2>/dev/null || echo 0) ))
+  local file_time
+  if [[ "$(uname)" == "Darwin" ]]; then
+    file_time=$(stat -f %m "$cache_file" 2>/dev/null || echo 0)
+  else
+    file_time=$(stat -c %Y "$cache_file" 2>/dev/null || echo 0)
+  fi
+  local file_age=$(( $(date +%s) - file_time ))
   [[ "$file_age" -gt "$ttl_seconds" ]]
 }
 
@@ -182,10 +188,15 @@ cache_list() {
     return 0
   fi
 
+  # Detect platform for stat command syntax
+  local is_darwin=false
+  [[ "$(uname)" == "Darwin" ]] && is_darwin=true
+
   printf "%-15s %-10s %-12s %-20s %s\n" "NAME" "SIZE" "AGE" "STATUS" "BINARY"
   printf "%-15s %-10s %-12s %-20s %s\n" "----" "----" "---" "------" "------"
 
-  for cache_file in "$CUSTOMRC_CACHE_DIR"/*(N); do
+  # Use find for portability (works in both bash and zsh)
+  while IFS= read -r cache_file; do
     [[ -f "$cache_file" ]] || continue
     [[ "$cache_file" == *.meta ]] && continue
     [[ -d "$cache_file" ]] && continue
@@ -194,7 +205,12 @@ cache_list() {
     name="${basename%.*}"
     extension="${basename##*.}"
 
-    local size=$(stat -f %z "$cache_file" 2>/dev/null || echo 0)
+    local size
+    if [[ "$is_darwin" == true ]]; then
+      size=$(stat -f %z "$cache_file" 2>/dev/null || echo 0)
+    else
+      size=$(stat -c %s "$cache_file" 2>/dev/null || echo 0)
+    fi
     local size_human
     if [[ "$size" -gt 1048576 ]]; then
       size_human="$((size / 1048576))MB"
@@ -204,9 +220,14 @@ cache_list() {
       size_human="${size}B"
     fi
 
-    local file_time=$(stat -f %m "$cache_file" 2>/dev/null || echo 0)
+    local file_time
+    if [[ "$is_darwin" == true ]]; then
+      file_time=$(stat -f %m "$cache_file" 2>/dev/null || echo 0)
+    else
+      file_time=$(stat -c %Y "$cache_file" 2>/dev/null || echo 0)
+    fi
     local now=$(date +%s)
-    age=$((now - file_time))
+    local age=$((now - file_time))
     local age_human
     if [[ "$age" -gt 86400 ]]; then
       age_human="$((age / 86400))d ago"
@@ -237,7 +258,7 @@ cache_list() {
     [[ -n "$binary" ]] && binary_short=$(basename "$binary")
 
     printf "%-15s %-10s %-12s %-20s %s\n" "$name" "$size_human" "$age_human" "$status" "$binary_short"
-  done
+  done < <(find "$CUSTOMRC_CACHE_DIR" -maxdepth 1 -type f 2>/dev/null)
 }
 
 # Clear specific or all caches

@@ -3,6 +3,22 @@
 
 CUSTOMRC_MONOLITHIC_CACHE="${CUSTOMRC_CACHE_DIR:-$HOME/.cache/customrc}/monolithic.sh"
 
+# Get file mtime in a cross-platform way
+# Usage: _get_mtime <file_path>
+# Sets: _MTIME_RESULT variable with the mtime (or 0 on error)
+_get_mtime() {
+  local file_path="$1"
+  _MTIME_RESULT=0
+
+  if [[ "$(uname)" == "Darwin" ]]; then
+    _MTIME_RESULT=$(stat -f %m "$file_path" 2>/dev/null) || _MTIME_RESULT=0
+  else
+    _MTIME_RESULT=$(stat -c %Y "$file_path" 2>/dev/null) || _MTIME_RESULT=0
+  fi
+
+  [[ -z "$_MTIME_RESULT" ]] && _MTIME_RESULT=0
+}
+
 # Checks if any source file is newer than the cached monolithic file
 _monolithic_needs_rebuild() {
   local cache_file="$1"
@@ -10,23 +26,23 @@ _monolithic_needs_rebuild() {
   # If cache doesn't exist, rebuild needed
   [[ ! -f "$cache_file" ]] && return 0
 
-  local cache_mtime=0
-  cache_mtime=$(stat -f %m "$cache_file" 2>/dev/null || stat -c %Y "$cache_file" 2>/dev/null)
-  [[ -z "$cache_mtime" ]] && cache_mtime=0
+  local cache_mtime
+  _get_mtime "$cache_file"
+  cache_mtime="$_MTIME_RESULT"
 
   # Check configs.sh
   local config_mtime
   if [[ -f "$CURRENT_PATH/configs.sh" ]]; then
-    config_mtime=$(stat -f %m "$CURRENT_PATH/configs.sh" 2>/dev/null || stat -c %Y "$CURRENT_PATH/configs.sh" 2>/dev/null)
-    [[ -z "$config_mtime" ]] && config_mtime=0
+    _get_mtime "$CURRENT_PATH/configs.sh"
+    config_mtime="$_MTIME_RESULT"
     [[ "$config_mtime" -gt "$cache_mtime" ]] && return 0
   fi
 
   # Check version file
   local version_mtime
   if [[ -f "$CURRENT_PATH/version" ]]; then
-    version_mtime=$(stat -f %m "$CURRENT_PATH/version" 2>/dev/null || stat -c %Y "$CURRENT_PATH/version" 2>/dev/null)
-    [[ -z "$version_mtime" ]] && version_mtime=0
+    _get_mtime "$CURRENT_PATH/version"
+    version_mtime="$_MTIME_RESULT"
     [[ "$version_mtime" -gt "$cache_mtime" ]] && return 0
   fi
 
@@ -34,12 +50,12 @@ _monolithic_needs_rebuild() {
   local dir file file_mtime
   for dir in "$CUSTOMRC_RC_MODULES_PATH/Global" "$CUSTOMRC_RC_MODULES_PATH/Darwin" "$CUSTOMRC_RC_MODULES_PATH/Linux"; do
     [[ ! -d "$dir" ]] && continue
-    for file in "$dir"/*(N); do
+    while IFS= read -r file; do
       [[ ! -f "$file" ]] && continue
-      file_mtime=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
-      [[ -z "$file_mtime" ]] && file_mtime=0
+      _get_mtime "$file"
+      file_mtime="$_MTIME_RESULT"
       [[ "$file_mtime" -gt "$cache_mtime" ]] && return 0
-    done
+    done < <(find "$dir" -maxdepth 1 -name "*.sh" -type f 2>/dev/null)
   done
 
   return 1
@@ -55,7 +71,7 @@ _append_modules_from_dir() {
   [[ ! -d "$directory" ]] && return 0
 
   local filepath filename is_ignored_file
-  for filepath in "$directory"/*(N); do
+  while IFS= read -r filepath; do
     [[ ! -f "$filepath" ]] && continue
     filename="${filepath##*/}"
 
@@ -70,7 +86,7 @@ _append_modules_from_dir() {
       command cat "$filepath"
       echo ""
     fi
-  done
+  done < <(find "$directory" -maxdepth 1 -name "*.sh" -type f 2>/dev/null | sort)
 }
 
 # Generates a clean monolithic file without timing instrumentation
