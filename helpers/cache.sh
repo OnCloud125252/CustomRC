@@ -129,7 +129,7 @@ cache_init() {
       [[ -n "$check_binary" ]] && _cache_write_meta "$name" "binary" "$check_binary"
       [[ -n "$ttl" ]] && _cache_write_meta "$name" "ttl" "$ttl"
     else
-      rm -f "$temp_file"
+      command rm -f "$temp_file"
       # Keep stale cache if regeneration fails
       [[ ! -f "$cache_file" ]] && return 1
     fi
@@ -242,16 +242,46 @@ cache_list() {
 
 # Clear specific or all caches
 # Usage: cache_clear [name]
+# Returns: 0 on success, 1 on failure
 cache_clear() {
   local name="${1:-}"
 
   if [[ -n "$name" ]]; then
-    rm -f "$CUSTOMRC_CACHE_DIR/${name}".* 2>/dev/null
-    rm -f "$CUSTOMRC_CACHE_META_DIR/${name}.meta" 2>/dev/null
+    # Check if cache files exist before attempting removal
+    local cache_exists=false
+    [[ -n $(ls "$CUSTOMRC_CACHE_DIR/${name}".* 2>/dev/null) ]] && cache_exists=true
+    [[ -f "$CUSTOMRC_CACHE_META_DIR/${name}.meta" ]] && cache_exists=true
+
+    if [[ "$cache_exists" == false ]]; then
+      echo "No cache found for: $name"
+      return 0
+    fi
+
+    # Attempt removal
+    local rm_failed=false
+    command rm -f "$CUSTOMRC_CACHE_DIR/${name}".* 2>/dev/null || rm_failed=true
+    command rm -f "$CUSTOMRC_CACHE_META_DIR/${name}.meta" 2>/dev/null || true
+
+    if [[ "$rm_failed" == true ]]; then
+      echo "Error: Failed to clear cache: $name" >&2
+      return 1
+    fi
+
     echo "Cleared cache: $name"
   else
-    rm -rf "$CUSTOMRC_CACHE_DIR"
-    echo "Cleared all caches"
+    # Check if cache directory exists
+    if [[ ! -d "$CUSTOMRC_CACHE_DIR" ]]; then
+      echo "No caches to clear"
+      return 0
+    fi
+
+    # Attempt to remove entire cache directory
+    if command rm -rf "$CUSTOMRC_CACHE_DIR" 2>/dev/null; then
+      echo "Cleared all caches"
+    else
+      echo "Error: Failed to clear cache directory: $CUSTOMRC_CACHE_DIR" >&2
+      return 1
+    fi
   fi
 }
 
@@ -275,7 +305,7 @@ cache_refresh() {
   fi
 
   # Remove existing cache to force regeneration
-  rm -f "$CUSTOMRC_CACHE_DIR/${name}".* 2>/dev/null
+  command rm -f "$CUSTOMRC_CACHE_DIR/${name}".* 2>/dev/null
 
   # Rebuild args
   local args=""

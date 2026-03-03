@@ -206,32 +206,35 @@ _autocomplete_get_completion_dir() {
 
   case "$shell_type" in
     bash)
-      # Check common Bash completion directories
-      if [[ -d "/etc/bash_completion.d" ]]; then
-        completion_dir="/etc/bash_completion.d"
-      elif [[ -d "/usr/local/etc/bash_completion.d" ]]; then
-        completion_dir="/usr/local/etc/bash_completion.d"
-      elif [[ -d "$HOME/.bash_completion.d" ]]; then
+      # Prefer user-local directories first (no sudo needed)
+      if [[ -d "$HOME/.bash_completion.d" ]]; then
         completion_dir="$HOME/.bash_completion.d"
+      elif [[ -d "/usr/local/etc/bash_completion.d" ]] && [[ -w "/usr/local/etc/bash_completion.d" ]]; then
+        completion_dir="/usr/local/etc/bash_completion.d"
+      elif [[ -d "/etc/bash_completion.d" ]] && [[ -w "/etc/bash_completion.d" ]]; then
+        completion_dir="/etc/bash_completion.d"
       else
-        # Default to user-local
+        # Default to user-local (create if needed)
         completion_dir="$HOME/.bash_completion.d"
       fi
       ;;
     zsh)
-      # Check common Zsh completion directories
-      if [[ -d "/usr/local/share/zsh/site-functions" ]]; then
-        completion_dir="/usr/local/share/zsh/site-functions"
-      elif [[ -d "/usr/share/zsh/site-functions" ]]; then
-        completion_dir="/usr/share/zsh/site-functions"
-      elif [[ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/completions" ]]; then
+      # Prefer user-local directories first (no sudo needed)
+      if [[ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/completions" ]]; then
         completion_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/completions"
+      elif [[ -d "$HOME/.zsh/completions" ]]; then
+        completion_dir="$HOME/.zsh/completions"
+      elif [[ -d "/usr/local/share/zsh/site-functions" ]] && [[ -w "/usr/local/share/zsh/site-functions" ]]; then
+        completion_dir="/usr/local/share/zsh/site-functions"
+      elif [[ -d "/usr/share/zsh/site-functions" ]] && [[ -w "/usr/share/zsh/site-functions" ]]; then
+        completion_dir="/usr/share/zsh/site-functions"
       else
-        # Use Zsh's fpath
+        # Check if first fpath entry is user-writable
         local zsh_fpath_dir="${FPATH%%:*}"
-        if [[ -d "$zsh_fpath_dir" ]]; then
+        if [[ -d "$zsh_fpath_dir" ]] && [[ -w "$zsh_fpath_dir" ]]; then
           completion_dir="$zsh_fpath_dir"
         else
+          # Default to user-local
           completion_dir="$HOME/.zsh/completions"
         fi
       fi
@@ -423,7 +426,7 @@ autocomplete_uninstall() {
     return 0
   fi
 
-  if trash "$installed_path" 2>/dev/null || rm -f "$installed_path"; then
+  if trash "$installed_path" 2>/dev/null || command rm -f "$installed_path"; then
     echo -e "\033[0;32m[✓]\033[0m Removed ${shell_type} completions from: $installed_path"
   else
     echo -e "\033[0;31m[✗]\033[0m Failed to remove: $installed_path"

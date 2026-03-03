@@ -93,7 +93,7 @@ if [[ "$CUSTOMRC_DEBUG_MODE" == true ]]; then
 
   # Create temporary file for combined configuration
   TEMP_COMBINED_RC=$(mktemp)
-  trap 'rm -f "$TEMP_COMBINED_RC"' EXIT
+  trap 'command rm -f "$TEMP_COMBINED_RC"' EXIT
 
   log_message "${INFO} ${WHITE}Initializing Customrc...${NC}"
   print_divider "$PURPLE" "customrc"

@@ -198,12 +198,41 @@ _customrc_cache_clear() {
   local name="${1:-}"
 
   if [[ -n "$name" ]]; then
-    rm -f "$cache_path/${name}".* 2>/dev/null
-    rm -f "$cache_path/.meta/${name}.meta" 2>/dev/null
+    # Check if cache files exist before attempting removal
+    local cache_exists=false
+    [[ -n $(ls "$cache_path/${name}".* 2>/dev/null) ]] && cache_exists=true
+    [[ -f "$cache_path/.meta/${name}.meta" ]] && cache_exists=true
+
+    if [[ "$cache_exists" == false ]]; then
+      _customrc_warn "No cache found for: $name"
+      return 0
+    fi
+
+    # Attempt removal and verify
+    local rm_failed=false
+    command rm -f "$cache_path/${name}".* 2>/dev/null || rm_failed=true
+    command rm -f "$cache_path/.meta/${name}.meta" 2>/dev/null || true
+
+    if [[ "$rm_failed" == true ]]; then
+      _customrc_error "Failed to clear cache: $name"
+      return 1
+    fi
+
     _customrc_success "Cleared cache: $name"
   else
-    rm -rf "$cache_path"
-    _customrc_success "Cleared all caches"
+    # Check if cache directory exists
+    if [[ ! -d "$cache_path" ]]; then
+      _customrc_warn "No cache directory found"
+      return 0
+    fi
+
+    # Attempt to clear all caches
+    if command rm -rf "$cache_path" 2>/dev/null; then
+      _customrc_success "Cleared all caches"
+    else
+      _customrc_error "Failed to clear cache directory: $cache_path"
+      return 1
+    fi
   fi
 }
 
@@ -212,7 +241,7 @@ _customrc_cache_rebuild() {
   local monolithic_cache="$(_customrc_get_cache_path)/monolithic.sh"
 
   _customrc_info "Clearing monolithic cache..."
-  rm -f "$monolithic_cache" 2>/dev/null
+  command rm -f "$monolithic_cache" 2>/dev/null
 
   _customrc_info "Rebuilding monolithic cache..."
   if [[ -f "$helpers_path/monolithic.sh" ]]; then
@@ -464,7 +493,12 @@ _customrc_modules_new() {
   local target_path="$target_dir/$module_name"
 
   # Create category directory if needed
-  mkdir -p "$target_dir"
+  if [[ ! -d "$target_dir" ]]; then
+    if ! mkdir -p "$target_dir" 2>/dev/null; then
+      _customrc_error "Failed to create directory: $target_dir"
+      return 1
+    fi
+  fi
 
   if [[ -f "$target_path" ]]; then
     _customrc_error "Module already exists: $target_path"
@@ -473,7 +507,7 @@ _customrc_modules_new() {
 
   # Create module from template
   local display_name="${module_name%.sh}"
-  cat > "$target_path" << EOF
+  if ! cat > "$target_path" << EOF
 # ${display_name}
 # CustomRC module - ${category}
 # Created: $(date +%Y-%m-%d)
@@ -482,6 +516,16 @@ _customrc_modules_new() {
 # See docs/optimized-modules.md for detailed guidance on writing optimized modules.
 
 EOF
+  then
+    _customrc_error "Failed to create module: $target_path"
+    return 1
+  fi
+
+  # Verify file was created
+  if [[ ! -f "$target_path" ]]; then
+    _customrc_error "Module file was not created: $target_path"
+    return 1
+  fi
 
   _customrc_success "Created module: $target_path"
   _customrc_info "Opening $target_path with $editor..."
@@ -517,13 +561,24 @@ _customrc_debug_on() {
     return 1
   fi
 
+  if [[ ! -w "$configs_path" ]]; then
+    _customrc_error "configs.sh is not writable: $configs_path"
+    return 1
+  fi
+
   if _customrc_is_darwin; then
     sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
   else
     sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
   fi
-  _customrc_success "Debug mode enabled"
-  _customrc_info "Restart your shell to apply changes"
+
+  if [[ $? -eq 0 ]]; then
+    _customrc_success "Debug mode enabled"
+    _customrc_info "Restart your shell to apply changes"
+  else
+    _customrc_error "Failed to enable debug mode"
+    return 1
+  fi
 }
 
 _customrc_debug_off() {
@@ -534,13 +589,24 @@ _customrc_debug_off() {
     return 1
   fi
 
+  if [[ ! -w "$configs_path" ]]; then
+    _customrc_error "configs.sh is not writable: $configs_path"
+    return 1
+  fi
+
   if _customrc_is_darwin; then
     sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
   else
     sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
   fi
-  _customrc_success "Debug mode disabled"
-  _customrc_info "Restart your shell to apply changes"
+
+  if [[ $? -eq 0 ]]; then
+    _customrc_success "Debug mode disabled"
+    _customrc_info "Restart your shell to apply changes"
+  else
+    _customrc_error "Failed to disable debug mode"
+    return 1
+  fi
 }
 
 _customrc_debug_status() {
