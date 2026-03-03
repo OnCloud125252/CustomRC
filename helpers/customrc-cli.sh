@@ -237,6 +237,7 @@ _customrc_cache_clear() {
 }
 
 _customrc_cache_rebuild() {
+  local customrc_path="$(_customrc_get_path)"
   local helpers_path="$(_customrc_get_helpers_path)"
   local monolithic_cache="$(_customrc_get_cache_path)/monolithic.sh"
 
@@ -245,6 +246,8 @@ _customrc_cache_rebuild() {
 
   _customrc_info "Rebuilding monolithic cache..."
   if [[ -f "$helpers_path/monolithic.sh" ]]; then
+    # Source configs.sh to get ignore lists and paths
+    source "$customrc_path/configs.sh" 2>/dev/null || true
     source "$helpers_path/cache.sh" 2>/dev/null || true
     source "$helpers_path/monolithic.sh"
     if generate_monolithic_file "$monolithic_cache"; then
