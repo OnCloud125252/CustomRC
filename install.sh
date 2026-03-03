@@ -108,8 +108,11 @@ setup_modules() {
     info "To reset, remove rc-modules/ and run installer again"
   else
     if [[ -d "$CUSTOMRC_DIR/rc-modules.example" ]]; then
-      cp -r "$CUSTOMRC_DIR/rc-modules.example" "$CUSTOMRC_DIR/rc-modules"
-      success "Created rc-modules/ from template"
+      if cp -r "$CUSTOMRC_DIR/rc-modules.example" "$CUSTOMRC_DIR/rc-modules"; then
+        success "Created rc-modules/ from template"
+      else
+        error "Failed to copy rc-modules. Check permissions."
+      fi
     else
       error "rc-modules.example/ not found. Is CustomRC installed correctly?"
     fi
@@ -124,8 +127,11 @@ setup_configs() {
     info "To reset, remove configs.sh and run installer again"
   else
     if [[ -f "$CUSTOMRC_DIR/configs.example.sh" ]]; then
-      cp "$CUSTOMRC_DIR/configs.example.sh" "$CUSTOMRC_DIR/configs.sh"
-      success "Created configs.sh from template"
+      if cp "$CUSTOMRC_DIR/configs.example.sh" "$CUSTOMRC_DIR/configs.sh"; then
+        success "Created configs.sh from template"
+      else
+        error "Failed to create configs.sh. Check permissions."
+      fi
     else
       error "configs.example.sh not found. Is CustomRC installed correctly?"
     fi
@@ -159,8 +165,11 @@ backup_rc_file() {
 
   if [[ -f "$rc_file" ]]; then
     local backup_file="${rc_file}.backup.$(date +%Y%m%d_%H%M%S)"
-    cp "$rc_file" "$backup_file"
-    success "Backed up $rc_file to $backup_file"
+    if cp "$rc_file" "$backup_file"; then
+      success "Backed up $rc_file to $backup_file"
+    else
+      error "Failed to backup $rc_file to $backup_file"
+    fi
   fi
 }
 
@@ -180,13 +189,24 @@ source \"\$CUSTOMRC_PATH/customrc.sh\""
 
   # Create rc file if it doesn't exist
   if [[ ! -f "$rc_file" ]]; then
-    touch "$rc_file"
-    success "Created $rc_file"
+    if touch "$rc_file" 2>/dev/null; then
+      success "Created $rc_file"
+    else
+      error "Failed to create $rc_file"
+    fi
+  fi
+
+  # Check if rc file is writable
+  if [[ ! -w "$rc_file" ]]; then
+    error "$rc_file is not writable"
   fi
 
   # Add source line
-  echo "$source_block" >> "$rc_file"
-  success "Added CustomRC to $rc_file"
+  if echo "$source_block" >> "$rc_file"; then
+    success "Added CustomRC to $rc_file"
+  else
+    error "Failed to add CustomRC to $rc_file"
+  fi
 }
 
 # -----------------------------------------------------------------------------
