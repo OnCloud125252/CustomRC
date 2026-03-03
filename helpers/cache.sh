@@ -185,7 +185,7 @@ cache_list() {
   printf "%-15s %-10s %-12s %-20s %s\n" "NAME" "SIZE" "AGE" "STATUS" "BINARY"
   printf "%-15s %-10s %-12s %-20s %s\n" "----" "----" "---" "------" "------"
 
-  for cache_file in "$CUSTOMRC_CACHE_DIR"/*; do
+  for cache_file in "$CUSTOMRC_CACHE_DIR"/*(N); do
     [[ -f "$cache_file" ]] || continue
     [[ "$cache_file" == *.meta ]] && continue
     [[ -d "$cache_file" ]] && continue

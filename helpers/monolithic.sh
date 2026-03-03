@@ -34,7 +34,7 @@ _monolithic_needs_rebuild() {
   local dir file file_mtime
   for dir in "$CUSTOMRC_RC_MODULES_PATH/Global" "$CUSTOMRC_RC_MODULES_PATH/Darwin" "$CUSTOMRC_RC_MODULES_PATH/Linux"; do
     [[ ! -d "$dir" ]] && continue
-    for file in "$dir"/*; do
+    for file in "$dir"/*(N); do
       [[ ! -f "$file" ]] && continue
       file_mtime=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
       : ${file_mtime:=0}
@@ -54,7 +54,7 @@ _append_modules_from_dir() {
   [[ ! -d "$directory" ]] && return
 
   local filepath filename is_ignored_file
-  for filepath in "$directory"/*; do
+  for filepath in "$directory"/*(N); do
     [[ ! -f "$filepath" ]] && continue
     filename="${filepath##*/}"
 
