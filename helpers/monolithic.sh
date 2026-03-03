@@ -45,13 +45,14 @@ _monolithic_needs_rebuild() {
   return 1
 }
 
-# Appends modules from a directory to the monolithic file, respecting ignore lists
+# Outputs modules from a directory to stdout, respecting ignore lists
+# Usage: _append_modules_from_dir <directory> <category> <ignore_list...>
 _append_modules_from_dir() {
-  local directory="$1" category="$2" cache_file="$3"
-  shift 3
+  local directory="$1" category="$2"
+  shift 2
   local ignore_list=("$@")
 
-  [[ ! -d "$directory" ]] && return
+  [[ ! -d "$directory" ]] && return 0
 
   local filepath filename is_ignored_file
   for filepath in "$directory"/*(N); do
@@ -65,52 +66,80 @@ _append_modules_from_dir() {
     done
 
     if [[ "$is_ignored_file" == false ]]; then
-      {
-        echo "# === $filename [$category] ==="
-        cat "$filepath"
-        echo ""
-      } >> "$cache_file"
+      echo "# === $filename [$category] ==="
+      cat "$filepath"
+      echo ""
     fi
   done
 }
 
 # Generates a clean monolithic file without timing instrumentation
+# Returns: 0 on success, 1 on failure
 generate_monolithic_file() {
   local cache_file="$1"
   local cache_dir="${cache_file%/*}"
 
+  # Check if cache directory parent is writable (if it exists)
+  if [[ -d "$cache_dir" && ! -w "$cache_dir" ]]; then
+    echo "Error: Cache directory not writable: $cache_dir" >&2
+    return 1
+  fi
+
   # Ensure cache directory exists
-  [[ ! -d "$cache_dir" ]] && mkdir -p "$cache_dir"
+  if [[ ! -d "$cache_dir" ]]; then
+    if ! mkdir -p "$cache_dir" 2>/dev/null; then
+      echo "Error: Failed to create cache directory: $cache_dir" >&2
+      return 1
+    fi
+  fi
 
   # Create fresh cache file with header
-  echo "# Monolithic RC - Generated $(date '+%Y-%m-%d %H:%M:%S')" > "$cache_file"
-  echo "# Do not edit - regenerated automatically when source files change" >> "$cache_file"
-  echo "" >> "$cache_file"
+  if ! {
+    echo "# Monolithic RC - Generated $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "# Do not edit - regenerated automatically when source files change"
+    echo ""
 
-  # Append Global modules
-  _append_modules_from_dir \
-    "$CUSTOMRC_RC_MODULES_PATH/Global" \
-    "Global" \
-    "$cache_file" \
-    "${CUSTOMRC_GLOBAL_IGNORE_LIST[@]}"
+    # Append Global modules
+    _append_modules_from_dir \
+      "$CUSTOMRC_RC_MODULES_PATH/Global" \
+      "Global" \
+      "/dev/stdout" \
+      "${CUSTOMRC_GLOBAL_IGNORE_LIST[@]}"
 
-  # Append OS-specific modules
-  local os_name
-  os_name=$(uname)
-  case "$os_name" in
-    Darwin)
-      _append_modules_from_dir \
-        "$CUSTOMRC_RC_MODULES_PATH/Darwin" \
-        "Darwin" \
-        "$cache_file" \
-        "${CUSTOMRC_DARWIN_IGNORE_LIST[@]}"
-      ;;
-    Linux)
-      _append_modules_from_dir \
-        "$CUSTOMRC_RC_MODULES_PATH/Linux" \
-        "Linux" \
-        "$cache_file" \
-        "${CUSTOMRC_LINUX_IGNORE_LIST[@]}"
-      ;;
-  esac
+    # Append OS-specific modules
+    local os_name
+    os_name=$(uname)
+    case "$os_name" in
+      Darwin)
+        _append_modules_from_dir \
+          "$CUSTOMRC_RC_MODULES_PATH/Darwin" \
+          "Darwin" \
+          "/dev/stdout" \
+          "${CUSTOMRC_DARWIN_IGNORE_LIST[@]}"
+        ;;
+      Linux)
+        _append_modules_from_dir \
+          "$CUSTOMRC_RC_MODULES_PATH/Linux" \
+          "Linux" \
+          "/dev/stdout" \
+          "${CUSTOMRC_LINUX_IGNORE_LIST[@]}"
+        ;;
+    esac
+  } > "$cache_file"; then
+    echo "Error: Failed to generate monolithic cache file" >&2
+    return 1
+  fi
+
+  # Verify file was created and has content
+  if [[ ! -f "$cache_file" ]]; then
+    echo "Error: Cache file was not created: $cache_file" >&2
+    return 1
+  fi
+
+  if [[ ! -s "$cache_file" ]]; then
+    echo "Error: Cache file was created but is empty: $cache_file" >&2
+    return 1
+  fi
+
+  return 0
 }
