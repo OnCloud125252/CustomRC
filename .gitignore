@@ -3,5 +3,6 @@
 docs/plans
 tests
 
-# Personal user configurations (use rc-modules.example/ as template)
+# Personal user configurations (use *.example files as templates)
 rc-modules/
+configs.sh
