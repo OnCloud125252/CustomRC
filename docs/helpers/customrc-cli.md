@@ -23,6 +23,7 @@ customrc help [command]
 ```
 
 **Usage:**
+
 ```bash
 # Show all commands
 customrc help
@@ -42,6 +43,7 @@ customrc version
 ```
 
 **Example Output:**
+
 ```
 customrc 1.0.0
 ```
@@ -55,6 +57,7 @@ customrc status
 ```
 
 **Example Output:**
+
 ```
 ━━━━[CustomRC Status]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -78,6 +81,7 @@ customrc doctor
 ```
 
 **Checks performed:**
+
 | Check | Description |
 |-------|-------------|
 | CustomRC directory | Verifies `CUSTOMRC_PATH` exists |
@@ -88,6 +92,7 @@ customrc doctor
 | configs.sh | Confirms configuration file exists |
 
 **Example Output:**
+
 ```
 ━━━━[CustomRC Doctor]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -120,6 +125,7 @@ customrc sync init [url]
 ```
 
 **Usage:**
+
 ```bash
 # Initialize as new git repo
 customrc sync init
@@ -165,6 +171,7 @@ customrc cache status
 ```
 
 **Example Output:**
+
 ```
 Cache Status:
 
@@ -184,6 +191,7 @@ customrc cache clear [name]
 ```
 
 **Usage:**
+
 ```bash
 # Clear all caches
 customrc cache clear
@@ -215,6 +223,7 @@ customrc modules list
 ```
 
 **Example Output:**
+
 ```
 Modules:
 
@@ -238,6 +247,7 @@ customrc modules edit <name>
 ```
 
 **Usage:**
+
 ```bash
 # Edit by filename (searches all directories)
 customrc modules edit docker.sh
@@ -256,6 +266,7 @@ customrc modules new <name>  # defaults to Global/
 ```
 
 **Usage:**
+
 ```bash
 # Create in Global directory
 customrc modules new my-aliases
@@ -266,6 +277,7 @@ customrc modules new Linux/linux-tools
 ```
 
 **Template generated:**
+
 ```bash
 # my-aliases
 # CustomRC module - Global
@@ -320,6 +332,7 @@ customrc update
 ```
 
 **Behavior:**
+
 1. Checks if CustomRC directory is a git repository
 2. Warns and exits if there are uncommitted changes
 3. Fetches from the remote and shows new commits
@@ -338,6 +351,7 @@ customrc update --force
 **Warning:** This will discard any local uncommitted changes in the CustomRC directory.
 
 **Example Output:**
+
 ```
 ━━━━[CustomRC Update]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -363,6 +377,7 @@ a96413a feat: enhance user guide with CLI commands for module management
 ```
 
 **Notes:**
+
 - If CustomRC is not a git repository, the command will fail with guidance
 - If no remote is configured, you'll be prompted to add one
 - If already up to date, the command exits early without rebuilding cache

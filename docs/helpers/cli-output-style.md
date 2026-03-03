@@ -45,6 +45,7 @@ _customrc_info "Fetching from origin/main..."
 ```
 
 **Output:**
+
 ```
 [i] Fetching from origin/main...
 ```
@@ -58,6 +59,7 @@ _customrc_success "Module created successfully"
 ```
 
 **Output:**
+
 ```
 [✓] Module created successfully
 ```
@@ -71,6 +73,7 @@ _customrc_warn "You have 3 uncommitted changes"
 ```
 
 **Output:**
+
 ```
 [!] You have 3 uncommitted changes
 ```
@@ -84,6 +87,7 @@ _customrc_error "Failed to connect to remote"
 ```
 
 **Output:**
+
 ```
 [✗] Failed to connect to remote
 ```
@@ -97,15 +101,18 @@ _customrc_divider [color] [label]
 ```
 
 **Parameters:**
+
 - `color` - ANSI color code (default: `$_CLI_PURPLE`)
 - `label` - Text to display in brackets (default: `customrc`)
 
 **Example:**
+
 ```bash
 _customrc_divider "$_CLI_PURPLE" "CustomRC Status"
 ```
 
 **Output:**
+
 ```
 ━━━━[CustomRC Status]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -186,6 +193,7 @@ h7i8j9k docs: update readme
 ### 1. Consistent Prefixes
 
 All messages start with a bracketed symbol for quick visual scanning:
+
 - `[i]` - Action in progress or neutral info
 - `[✓]` - Action completed successfully
 - `[!]` - Non-fatal issue or advisory
@@ -194,6 +202,7 @@ All messages start with a bracketed symbol for quick visual scanning:
 ### 2. Color Semantics
 
 Colors have consistent meaning across all commands:
+
 - **Green** - Success, enabled, loaded
 - **Red** - Error, disabled, ignored
 - **Yellow** - Warning, caution
@@ -210,6 +219,7 @@ Colors have consistent meaning across all commands:
 ### 4. Actionable Feedback
 
 Messages include next steps when applicable:
+
 ```
 [✓] Debug mode enabled
 [i] Restart your shell to apply changes

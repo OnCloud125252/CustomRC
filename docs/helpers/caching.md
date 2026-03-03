@@ -30,10 +30,12 @@ cache_init <name> <command> [options]
 ```
 
 **Parameters:**
+
 - `name` - Unique identifier for the cache
 - `command` - Shell command to generate cache content
 
 **Options:**
+
 | Option | Description |
 |--------|-------------|
 | `--ttl <duration>` | Cache lifetime (e.g., `1h`, `7d`, `3600`) |
@@ -42,6 +44,7 @@ cache_init <name> <command> [options]
 | `--no-source` | Don't source the cache file after creation |
 
 **TTL Format:**
+
 | Unit | Example | Meaning |
 |------|---------|---------|
 | `s` | `30s` | 30 seconds |
@@ -51,6 +54,7 @@ cache_init <name> <command> [options]
 | `w` | `1w` | 1 week |
 
 **Usage:**
+
 ```bash
 # Cache with TTL
 cache_init "starship" "starship init zsh" --ttl "7d"
@@ -78,10 +82,12 @@ cache_get <name> [result_var] [--extension ext]
 ```
 
 **Parameters:**
+
 - `name` - Cache identifier
 - `result_var` - Variable to store content (optional, prints if omitted)
 
 **Usage:**
+
 ```bash
 # Print cache content
 cache_get "version"
@@ -102,6 +108,7 @@ cache_list
 ```
 
 **Example Output:**
+
 ```
 NAME            SIZE       AGE          STATUS               BINARY
 ----            ----       ---          ------               ------
@@ -120,6 +127,7 @@ cache_clear [name]
 ```
 
 **Usage:**
+
 ```bash
 # Clear specific cache
 cache_clear "starship"
@@ -137,6 +145,7 @@ cache_refresh <name>
 ```
 
 **Usage:**
+
 ```bash
 cache_refresh "starship"
 ```

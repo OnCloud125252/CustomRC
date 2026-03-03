@@ -26,9 +26,11 @@ Before opening an issue, please:
 2. **Make your changes** following the code style guidelines below
 3. **Test your changes** by sourcing the modified files
 4. **Run the benchmark** to ensure no performance regressions:
+
    ```bash
    ./benchmark.sh
    ```
+
 5. **Commit your changes** using conventional commits (see below)
 6. **Open a pull request** with a clear description of the changes
 
@@ -52,6 +54,7 @@ CustomRC prioritizes fast shell startup. When contributing:
 - Test performance with `./benchmark.sh`
 
 Target load times:
+
 - Aliases: < 2ms
 - Functions: < 5ms
 - Cached completions: < 10ms
@@ -73,6 +76,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only
@@ -83,6 +87,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Examples:
+
 ```
 feat: add lazy loading for nvm initialization
 fix: correct path detection on Apple Silicon Macs
@@ -93,23 +98,27 @@ perf: reduce fzf module load time by 50%
 ## Development Workflow
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc-dev
    ```
 
 2. **Create a test environment**:
+
    ```bash
    # Create test modules
    cp -r rc-modules.example rc-modules
    ```
 
 3. **Enable debug mode** for development:
+
    ```bash
    # In configs.sh or export directly
    export CUSTOMRC_DEBUG_MODE=true
    ```
 
 4. **Test changes**:
+
    ```bash
    # Source the configuration
    source customrc.sh
@@ -144,6 +153,7 @@ customrc/
 ## Questions?
 
 If you have questions about contributing, feel free to:
+
 - Open a discussion on GitHub
 - Check the [documentation](docs/)
 

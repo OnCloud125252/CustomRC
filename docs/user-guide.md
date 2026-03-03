@@ -15,6 +15,7 @@ git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc
 ```
 
 The installer will:
+
 1. Check that you have a compatible shell (Bash 4+ or Zsh 5+)
 2. Create `rc-modules/` from the example templates
 3. Back up your existing shell configuration
@@ -104,14 +105,17 @@ The `customrc` CLI makes syncing easy.
 **On your first machine:**
 
 1. Initialize your modules directory as a git repo:
+
    ```bash
    cd ~/.customrc/rc-modules
    git init
    git add .
    git commit -m "Initial commit"
    ```
+
 2. Create a repository on GitHub/GitLab.
 3. Link and push:
+
    ```bash
    customrc sync init https://github.com/YOU/my-shell-config.git
    customrc sync push
@@ -149,6 +153,7 @@ git clone https://github.com/YOU/my-shell-config.git rc-modules
 ```
 
 Benefits:
+
 - Your personal configs are versioned separately
 - Update CustomRC without affecting your modules
 - Easy to share modules between machines
@@ -175,6 +180,7 @@ rsync -av ~/.customrc/rc-modules/ user@otherhost:~/.customrc/rc-modules/
 ## Configuration
 
 See [Configuration](configuration.md) for detailed options including:
+
 - Operating modes (debug vs production)
 - Ignore lists for disabling modules
 - Cache management
@@ -194,6 +200,7 @@ customrc debug off
 ```
 
 This shows:
+
 - Which modules are loaded
 - Load time for each module
 - Total initialization time
@@ -215,6 +222,7 @@ customrc update
 ```
 
 This command will:
+
 - Check if CustomRC is a git repository
 - Warn about uncommitted changes (use `--force` to override)
 - Fetch and show new commits before pulling
@@ -237,6 +245,7 @@ customrc status
 ```
 
 This displays:
+
 - Version, paths, and debug mode status
 - Git sync status of rc-modules
 - Module counts by category (Global, Darwin, Linux)
@@ -252,6 +261,7 @@ customrc doctor
 ```
 
 This checks:
+
 - CustomRC directory exists
 - rc-modules directory is present
 - Required helpers are available
@@ -275,6 +285,7 @@ This checks:
 ### Changes not taking effect
 
 In production mode, changes are cached. Either:
+
 - Remove the cache: `rm -rf ~/.cache/customrc/`
 - Or restart your shell (cache auto-rebuilds when files change)
 
@@ -287,6 +298,7 @@ Yes! CustomRC complements shell frameworks. Load CustomRC after your framework i
 ### How is this different from just having multiple source files?
 
 CustomRC adds:
+
 - Automatic platform detection (Darwin/Linux)
 - Smart caching for production performance
 - Debug mode with timing

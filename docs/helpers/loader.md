@@ -23,14 +23,17 @@ is_ignored <filename> [ignored_items...]
 ```
 
 **Parameters:**
+
 - `filename` - The file name to check
 - `ignored_items` - List of filenames to ignore
 
 **Returns:**
+
 - `0` if the file is in the ignore list
 - `1` if the file is not ignored
 
 **Usage:**
+
 ```bash
 if is_ignored "slow-module.sh" "${CUSTOMRC_GLOBAL_IGNORE_LIST[@]}"; then
   echo "Skipping slow-module.sh"
@@ -46,17 +49,20 @@ add_file_to_combined <filepath> <filename> <category>
 ```
 
 **Parameters:**
+
 - `filepath` - Full path to the file
 - `filename` - Name of the file (for logging)
 - `category` - Category label (e.g., "Global", "Darwin")
 
 **Behavior:**
+
 - Wraps file content with start/end markers
 - Adds timing code to measure load duration
 - Outputs debug information when `CUSTOMRC_DEBUG_MODE` is enabled
 - Increments `CUSTOMRC_LOADED_COUNT`
 
 **Generated Structure:**
+
 ```bash
 # === Start of mymodule.sh [Global] ===
 _file_start_time=$(date +%s%N)
@@ -78,17 +84,20 @@ process_rc_directory <directory> <category> [ignored_files...]
 ```
 
 **Parameters:**
+
 - `directory` - Path to the directory containing RC files
 - `category` - Category label for logging
 - `ignored_files` - Files to skip (optional)
 
 **Behavior:**
+
 - Iterates through all files in the directory
 - Skips files in the ignore list (increments `CUSTOMRC_IGNORED_COUNT`)
 - Calls `add_file_to_combined` for non-ignored files
 - Logs ignored files when debug mode is enabled
 
 **Usage:**
+
 ```bash
 process_rc_directory \
   "$CUSTOMRC_RC_MODULES_PATH/Global" \

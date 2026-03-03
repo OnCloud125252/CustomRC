@@ -25,6 +25,7 @@ Enable verbose output with per-module timing by setting `CUSTOMRC_DEBUG_MODE=tru
 ```
 
 Use debug mode when:
+
 - Developing new modules
 - Troubleshooting slow startup times
 - Identifying which modules are being loaded

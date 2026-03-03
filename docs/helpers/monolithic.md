@@ -51,10 +51,12 @@ _monolithic_needs_rebuild <cache_file>
 ```
 
 **Returns:**
+
 - `0` if rebuild is needed (cache missing or source files changed)
 - `1` if cache is still valid
 
 **Checks:**
+
 - Cache file exists
 - `configs.sh` modification time
 - All files in `Global/`, `Darwin/`, and `Linux/` directories
@@ -68,6 +70,7 @@ _append_modules_from_dir <directory> <category> <cache_file> [ignored_files...]
 ```
 
 **Parameters:**
+
 - `directory` - Path to module directory
 - `category` - Category label (for file markers)
 - `cache_file` - Path to the output cache file
@@ -82,9 +85,11 @@ generate_monolithic_file <cache_file>
 ```
 
 **Parameters:**
+
 - `cache_file` - Path where the combined script will be written
 
 **Behavior:**
+
 1. Creates cache directory if needed
 2. Writes header with generation timestamp
 3. Appends Global modules (respecting `CUSTOMRC_GLOBAL_IGNORE_LIST`)
@@ -141,6 +146,7 @@ fi
 | Monolithic | 20-50ms | Daily use, production |
 
 The monolithic approach is faster because:
+
 - Single file read operation
 - No timing instrumentation overhead
 - No per-file debug checks

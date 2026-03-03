@@ -23,10 +23,12 @@ get_duration_ms <start_time> <result_var>
 ```
 
 **Parameters:**
+
 - `start_time` - Nanosecond timestamp from `$(date +%s%N)`
 - `result_var` - Variable name to store the result
 
 **Usage:**
+
 ```bash
 local start_time=$(date +%s%N)
 # ... do work ...
@@ -44,10 +46,12 @@ get_duration_color <duration_ms> <result_var>
 ```
 
 **Parameters:**
+
 - `duration_ms` - Duration in milliseconds
 - `result_var` - Variable name to store the color code
 
 **Thresholds:**
+
 | Duration | Color | Meaning |
 |----------|-------|---------|
 | < 10ms | Green | Fast (optimal) |
@@ -55,6 +59,7 @@ get_duration_color <duration_ms> <result_var>
 | > 50ms | Red | Slow (needs optimization) |
 
 **Usage:**
+
 ```bash
 local color
 get_duration_color 25 color
@@ -70,10 +75,12 @@ get_total_duration_color <duration_ms> <result_var>
 ```
 
 **Parameters:**
+
 - `duration_ms` - Total duration in milliseconds
 - `result_var` - Variable name to store the color code
 
 **Thresholds:**
+
 | Duration | Color | Meaning |
 |----------|-------|---------|
 | < 1000ms | Green | Fast startup |

@@ -23,15 +23,18 @@ print_divider [color] [label]
 ```
 
 **Parameters:**
+
 - `color` - ANSI color code (default: `$PURPLE`)
 - `label` - Text to display in the divider (default: `customrc`)
 
 **Example Output:**
+
 ```
 ━━━━[customrc]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Usage:**
+
 ```bash
 print_divider "$BLUE" "Global Modules"
 print_divider "$CYAN" "Darwin"
@@ -47,9 +50,11 @@ log_message <message>
 ```
 
 **Parameters:**
+
 - `message` - The message to display (supports ANSI escape codes)
 
 **Usage:**
+
 ```bash
 log_message "${CHECK} Loaded: mymodule.sh"
 log_message "${WARN} Skipping optional module"

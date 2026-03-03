@@ -34,6 +34,7 @@ git clone https://github.com/OnCloud125252/CustomRC.git ~/.customrc
 ```
 
 The installer will:
+
 1. Create `rc-modules/` from the example templates
 2. Back up your existing shell config
 3. Add CustomRC to your shell startup
@@ -114,6 +115,7 @@ customrc debug on
 ```
 
 To disable it later:
+
 ```bash
 customrc debug off
 ```

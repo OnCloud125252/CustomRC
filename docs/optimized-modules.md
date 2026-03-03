@@ -12,6 +12,7 @@ This guide covers best practices for creating fast-loading shell modules in Cust
 | **Conditional Loading** | Only load when dependencies exist | `[[ -d "$HOME/.cargo" ]] && source ...` |
 
 **Quick wins:**
+
 - Replace `eval "$(tool init)"` with cached file sourcing
 - Use `command -v tool &>/dev/null || return 0` for early exits
 - Avoid subshells for static values: `$(<file)` instead of `$(cat file)`

@@ -34,6 +34,7 @@ printf '\n%.0s' {1..$(($(tput lines) - 2))}
 ## Visual Example
 
 **Without this helper:**
+
 ```
 ┌────────────────────────────────┐
 │ $ _                            │  ← Prompt at top
@@ -46,6 +47,7 @@ printf '\n%.0s' {1..$(($(tput lines) - 2))}
 ```
 
 **With this helper:**
+
 ```
 ┌────────────────────────────────┐
 │                                │
@@ -86,6 +88,7 @@ _clear  # Standard clear behavior
 ## Compatibility
 
 This helper works with:
+
 - zsh (primary target)
 - Most terminal emulators (iTerm2, Terminal.app, Alacritty, etc.)
 
