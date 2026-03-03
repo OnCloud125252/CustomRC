@@ -32,6 +32,7 @@ customrc help
 customrc help sync
 customrc help modules
 customrc help cache
+customrc help complete
 ```
 
 ### `customrc version`
@@ -408,6 +409,126 @@ These functions are used internally by the CLI:
 | `_customrc_get_helpers_path` | Returns helpers directory path |
 | `_customrc_get_cache_path` | Returns cache directory path |
 
+## Complete Commands
+
+Manage shell tab completions for the `customrc` CLI.
+
+### `customrc complete install`
+
+Installs shell completions for your detected shell (Bash or Zsh).
+
+```bash
+customrc complete install
+```
+
+**Behavior:**
+
+- Auto-detects your shell (Bash or Zsh)
+- Installs the appropriate completion script to your shell's completion directory
+- Creates the completion directory if it does not exist
+
+**Completion directories:**
+
+| Shell | Directory |
+|-------|-----------|
+| Bash | `~/.bash_completion.d/` or `/etc/bash_completion.d/` |
+| Zsh | `~/.zsh/completions/` or `/usr/local/share/zsh/site-functions/` |
+
+**Example Output:**
+
+```
+[✓] Installed zsh completions to: /Users/you/.zsh/completions/_customrc
+[i] Restart your shell or source your rc file to activate completions
+```
+
+**After installing:**
+
+```bash
+# Completions work immediately after restarting your shell
+exec $SHELL
+
+# Then you can use tab completion
+customrc syn<TAB>      # completes to "sync"
+customrc sync <TAB>    # shows: init push pull status
+```
+
+### `customrc complete status`
+
+Shows whether completions are installed and for which shell.
+
+```bash
+customrc complete status
+```
+
+**Example Output:**
+
+```
+Completion Status:
+
+  Detected shell: zsh
+  Completion dir: /Users/you/.zsh/completions
+  Status: ✓ Installed
+  Location: /Users/you/.zsh/completions/_customrc
+```
+
+Or when not installed:
+
+```
+Completion Status:
+
+  Detected shell: bash
+  Completion dir: /etc/bash_completion.d
+  Status: ! Not installed
+```
+
+### `customrc complete uninstall`
+
+Removes the completion script for your current shell.
+
+```bash
+customrc complete uninstall
+```
+
+**Example Output:**
+
+```
+[✓] Removed zsh completions from: /Users/you/.zsh/completions/_customrc
+```
+
+### Auto-Prompt on First Use
+
+When you open a new interactive shell and completions are not installed, CustomRC displays a one-time message:
+
+```
+[i] Shell completions are available for CustomRC
+    Run `customrc complete install` to enable tab completion
+```
+
+This message appears only once per shell session. The check runs in the background to avoid delaying shell startup.
+
+### Completion Features
+
+The completion scripts provide intelligent suggestions for:
+
+- **Top-level commands**: `sync`, `cache`, `modules`, `debug`, `update`, `status`, `doctor`, `version`, `help`, `complete`
+- **Subcommands**: Context-aware completion based on the command (e.g., `customrc sync <TAB>` suggests `init push pull status`)
+- **Module names**: When using `customrc modules edit <TAB>`, available modules are suggested with their categories
+
+**Examples:**
+
+```bash
+# Complete commands
+customrc sta<TAB>       # completes to "status"
+customrc comp<TAB>      # completes to "complete"
+
+# Complete subcommands
+customrc cache <TAB>    # shows: clear rebuild status
+customrc modules <TAB>  # shows: list edit new
+
+# Complete module names
+customrc modules edit <TAB>       # shows: Global/aliases Global/docker Darwin/brew
+```
+
 ## Examples
 
 ### Setting Up Sync
@@ -453,9 +574,28 @@ customrc modules new Global/docker
 customrc modules list
 ```
 
+### Enabling Tab Completions
+
+```bash
+# Check if completions are installed
+customrc complete status
+
+# Install completions for your shell
+customrc complete install
+
+# Restart shell to activate completions
+exec $SHELL
+
+# Now use tab completion
+customrc mod<TAB>      # completes to "modules"
+customrc modules <TAB> # shows: list edit new
+customrc modules edit <TAB> # shows available modules
+```
+
 ## See Also
 
 - [caching.md](./caching.md) - Cache system details
 - [monolithic.md](./monolithic.md) - Monolithic cache generation
+- [../version.md](../version.md) - Version system documentation
 - [../user-guide.md](../user-guide.md) - User guide
 - [../configuration.md](../configuration.md) - Configuration options

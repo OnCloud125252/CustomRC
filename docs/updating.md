@@ -508,6 +508,7 @@ crontab -e
 
 ## Related Documentation
 
+- [Version System](version.md) — How CustomRC versioning works
 - [User Guide](user-guide.md) — Installation, customization, and syncing
 - [CLI Reference](helpers/customrc-cli.md) — Comprehensive guide to the `customrc` command
 - [Configuration](configuration.md) — Operating modes, ignore lists, cache management

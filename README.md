@@ -77,6 +77,16 @@ customrc doctor
 customrc update
 ```
 
+### Enable Tab Completions
+
+```bash
+# Install completions for your shell (bash/zsh)
+customrc complete install
+
+# Restart your shell to activate
+customrc status    # Now type: customrc sta<TAB> to complete
+```
+
 ### Managing Modules
 
 Easily manage your modules directly from the command line:

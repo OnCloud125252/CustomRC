@@ -17,6 +17,9 @@ CustomRC breaks down monolithic shell configuration files (bashrc/zshrc) into ma
   - `logging.sh`: Output formatting.
   - `timing.sh`: Execution timing.
   - `cache.sh`: Centralized caching mechanism for expensive initializations.
+  - `customrc-cli.sh`: Git-style CLI commands (`customrc <command>`).
+  - `autocomplete.sh`: Shell completion installation and management.
+  - `monolithic.sh`: Production mode cache generation.
 - **Platform Specifics**: `Darwin/` for macOS, `Linux/` for Linux, `Global/` for shared.
 
 ## Development Workflow
@@ -28,6 +31,23 @@ CustomRC breaks down monolithic shell configuration files (bashrc/zshrc) into ma
   - Use `./benchmark.sh` to evaluate startup time and compare against a monolithic build.
   - Target load times: Aliases < 2ms, Functions < 5ms, Cached completions < 10ms.
   - Refer to `docs/optimized-modules.md` for optimization patterns (lazy loading, caching).
+
+## CLI Commands
+
+CustomRC provides a `customrc` CLI for management:
+
+| Command | Description |
+|---------|-------------|
+| `customrc sync` | Git sync operations for rc-modules (init, push, pull, status) |
+| `customrc cache` | Manage monolithic cache (clear, rebuild, status) |
+| `customrc modules` | Module management (list, edit, new) |
+| `customrc debug` | Toggle debug mode (on, off, status) |
+| `customrc update` | Update CustomRC to latest version |
+| `customrc status` | Show overall system status |
+| `customrc doctor` | Run health checks |
+| `customrc complete` | Shell completions (install, status, uninstall) |
+| `customrc version` | Show version |
+| `customrc help` | Show help |
 
 ## Code Style
 
@@ -43,8 +63,22 @@ CustomRC breaks down monolithic shell configuration files (bashrc/zshrc) into ma
 
 ## Key Files
 
-- `customrc.sh`: Main entry point.
-- `helpers/cache.sh`: Caching utility.
-- `benchmark.sh`: Performance testing tool.
-- `docs/optimized-modules.md`: Optimization guide.
-- `README.md`: Project documentation.
+| File | Purpose |
+|---|---|
+| `customrc.sh` | Main entry point. |
+| `helpers/cache.sh` | Caching utility. |
+| `helpers/customrc-cli.sh` | CLI command implementations. |
+| `helpers/autocomplete.sh` | Shell completion management. |
+| `helpers/monolithic.sh` | Production cache builder. |
+| `benchmark.sh` | Performance testing tool. |
+| `docs/optimized-modules.md` | Optimization guide. |
+| `README.md` | Project documentation. |
+
+## Documentation
+
+Detailed guides are in `docs/`:
+
+- `docs/optimized-modules.md` - Writing fast-loading modules
+- `docs/user-guide.md` - User-facing documentation
+- `docs/updating.md` - Update procedures
+- `docs/configuration.md` - Configuration options
