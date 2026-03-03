@@ -217,24 +217,23 @@ See [Writing Optimized Modules](optimized-modules.md) for detailed guidance.
 
 ## Updating CustomRC
 
+To update CustomRC to the latest version:
+
 ```bash
 customrc update
 ```
 
-This command will:
+Your personal modules in `rc-modules/` are completely preserved during updates.
 
-- Check if CustomRC is a git repository
-- Warn about uncommitted changes (use `--force` to override)
-- Fetch and show new commits before pulling
-- Pull updates and rebuild cache automatically
+For comprehensive update instructions including:
 
-If you have uncommitted changes and want to update anyway:
+- Pre-update checklist
+- Handling uncommitted changes
+- Troubleshooting common issues
+- Rollback procedures
+- Automated update options
 
-```bash
-customrc update --force
-```
-
-Your personal modules in `rc-modules/` are unaffected by updates.
+See the [Updating CustomRC](updating.md) guide.
 
 ## Checking Status
 

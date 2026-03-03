@@ -142,6 +142,7 @@ See the [User Guide: Syncing Across Machines](docs/user-guide.md#syncing-across-
 | Document | Description |
 |----------|-------------|
 | [User Guide](docs/user-guide.md) | Installation, customization, and syncing |
+| [Updating CustomRC](docs/updating.md) | Update workflow, troubleshooting, and rollbacks |
 | [CLI Reference](docs/helpers/customrc-cli.md) | Comprehensive guide to the `customrc` command |
 | [Configuration](docs/configuration.md) | Operating modes, ignore lists, cache management |
 | [Writing Optimized Modules](docs/optimized-modules.md) | Performance best practices |
