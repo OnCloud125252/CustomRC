@@ -47,13 +47,13 @@ _cache_write_meta() {
   local name="$1" key="$2" value="$3"
   local meta_file="$CUSTOMRC_CACHE_META_DIR/${name}.meta"
 
-  mkdir -p "$CUSTOMRC_CACHE_META_DIR"
+  command mkdir -p "$CUSTOMRC_CACHE_META_DIR"
 
   # Simple key=value format
   if [[ -f "$meta_file" ]]; then
     # Remove existing key if present
-    grep -v "^${key}=" "$meta_file" > "${meta_file}.tmp" 2>/dev/null || true
-    mv "${meta_file}.tmp" "$meta_file"
+    command grep -v "^${key}=" "$meta_file" > "${meta_file}.tmp" 2>/dev/null || true
+    command mv "${meta_file}.tmp" "$meta_file"
   fi
   echo "${key}=${value}" >> "$meta_file"
 }
@@ -66,7 +66,7 @@ _cache_read_meta() {
   local value=""
 
   if [[ -f "$meta_file" ]]; then
-    value=$(grep "^${key}=" "$meta_file" 2>/dev/null | cut -d= -f2-)
+    value=$(command grep "^${key}=" "$meta_file" 2>/dev/null | cut -d= -f2-)
   fi
 
   if [[ -n "$result_var" ]]; then
@@ -104,7 +104,7 @@ cache_init() {
   local cache_file="$CUSTOMRC_CACHE_DIR/${name}.${extension}"
   local needs_regenerate=false
 
-  mkdir -p "$CUSTOMRC_CACHE_DIR"
+  command mkdir -p "$CUSTOMRC_CACHE_DIR"
 
   # Check if cache needs regeneration
   if [[ ! -f "$cache_file" ]]; then
@@ -123,7 +123,7 @@ cache_init() {
   if [[ "$needs_regenerate" == true ]]; then
     local temp_file="${cache_file}.tmp"
     if eval "$command" > "$temp_file" 2>/dev/null; then
-      mv "$temp_file" "$cache_file"
+      command mv "$temp_file" "$cache_file"
       _cache_write_meta "$name" "command" "$command"
       _cache_write_meta "$name" "created" "$(date +%s)"
       [[ -n "$check_binary" ]] && _cache_write_meta "$name" "binary" "$check_binary"

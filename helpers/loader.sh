@@ -15,7 +15,7 @@ add_file_to_combined() {
   {
     echo "# === Start of $filename [$category] ==="
     echo '_file_start_time=$(date +%s%N)'
-    cat "$filepath"
+    command cat "$filepath"
     echo ""
     echo '_file_end_time=$(date +%s%N)'
     echo '_file_duration=$(( (_file_end_time - _file_start_time) / 1000000 ))'

@@ -90,7 +90,7 @@ _customrc_sync_init() {
     if [[ -d "$modules_path" ]]; then
       local backup_path="${modules_path}.backup.$(date +%Y%m%d_%H%M%S)"
       _customrc_info "Backing up existing rc-modules to $backup_path"
-      mv "$modules_path" "$backup_path"
+      command mv "$modules_path" "$backup_path"
     fi
     _customrc_info "Cloning from $url..."
     if git clone "$url" "$modules_path"; then
@@ -494,7 +494,7 @@ _customrc_modules_new() {
 
   # Create category directory if needed
   if [[ ! -d "$target_dir" ]]; then
-    if ! mkdir -p "$target_dir" 2>/dev/null; then
+    if ! command mkdir -p "$target_dir" 2>/dev/null; then
       _customrc_error "Failed to create directory: $target_dir"
       return 1
     fi
@@ -507,7 +507,7 @@ _customrc_modules_new() {
 
   # Create module from template
   local display_name="${module_name%.sh}"
-  if ! cat > "$target_path" << EOF
+  if ! command cat > "$target_path" << EOF
 # ${display_name}
 # CustomRC module - ${category}
 # Created: $(date +%Y-%m-%d)
@@ -567,9 +567,9 @@ _customrc_debug_on() {
   fi
 
   if _customrc_is_darwin; then
-    sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
+    command sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
   else
-    sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
+    command sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=true/' "$configs_path"
   fi
 
   if [[ $? -eq 0 ]]; then
@@ -595,9 +595,9 @@ _customrc_debug_off() {
   fi
 
   if _customrc_is_darwin; then
-    sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
+    command sed -i '' 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
   else
-    sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
+    command sed -i 's/^CUSTOMRC_DEBUG_MODE=.*/CUSTOMRC_DEBUG_MODE=false/' "$configs_path"
   fi
 
   if [[ $? -eq 0 ]]; then
@@ -617,7 +617,7 @@ _customrc_debug_status() {
     return 1
   fi
 
-  local debug_mode=$(grep '^CUSTOMRC_DEBUG_MODE=' "$configs_path" | cut -d= -f2)
+  local debug_mode=$(command grep '^CUSTOMRC_DEBUG_MODE=' "$configs_path" | cut -d= -f2)
 
   echo ""
   echo -e "${_CLI_PURPLE}Debug Status:${_CLI_NC}"
@@ -738,7 +738,7 @@ _customrc_update() {
   if [[ ! -f "$customrc_path/configs.sh" ]]; then
     if [[ -f "$customrc_path/configs.example.sh" ]]; then
       _customrc_info "Creating configs.sh from template..."
-      cp "$customrc_path/configs.example.sh" "$customrc_path/configs.sh"
+      command cp "$customrc_path/configs.example.sh" "$customrc_path/configs.sh"
       _customrc_success "Created configs.sh"
     fi
   fi
@@ -778,7 +778,7 @@ _customrc_status() {
   echo -e "  Cache:       $cache_path"
 
   # Debug mode
-  local debug_mode=$(grep '^CUSTOMRC_DEBUG_MODE=' "$customrc_path/configs.sh" 2>/dev/null | cut -d= -f2)
+  local debug_mode=$(command grep '^CUSTOMRC_DEBUG_MODE=' "$customrc_path/configs.sh" 2>/dev/null | cut -d= -f2)
   if [[ "$debug_mode" == "true" ]]; then
     echo -e "  Debug:       ${_CLI_GREEN}enabled${_CLI_NC}"
   else

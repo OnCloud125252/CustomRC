@@ -67,7 +67,7 @@ _append_modules_from_dir() {
 
     if [[ "$is_ignored_file" == false ]]; then
       echo "# === $filename [$category] ==="
-      cat "$filepath"
+      command cat "$filepath"
       echo ""
     fi
   done
@@ -87,7 +87,7 @@ generate_monolithic_file() {
 
   # Ensure cache directory exists
   if [[ ! -d "$cache_dir" ]]; then
-    if ! mkdir -p "$cache_dir" 2>/dev/null; then
+    if ! command mkdir -p "$cache_dir" 2>/dev/null; then
       echo "Error: Failed to create cache directory: $cache_dir" >&2
       return 1
     fi

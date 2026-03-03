@@ -298,7 +298,7 @@ _autocomplete_get_installed_path() {
 # Mark that auto-check has run (using a flag file)
 _autocomplete_mark_checked() {
   local flag_file="${CUSTOMRC_CACHE_DIR:-$HOME/.cache/customrc}/.autocomplete_checked"
-  mkdir -p "$(dirname "$flag_file")"
+  command mkdir -p "$(dirname "$flag_file")"
   touch "$flag_file"
 }
 
@@ -329,7 +329,7 @@ autocomplete_install() {
 
   # Create completion directory if it doesn't exist
   if [[ ! -d "$completion_dir" ]]; then
-    mkdir -p "$completion_dir" 2>/dev/null || {
+    command mkdir -p "$completion_dir" 2>/dev/null || {
       echo -e "\033[0;31m[✗]\033[0m Failed to create completion directory: $completion_dir"
       return 1
     }
@@ -362,7 +362,7 @@ autocomplete_install() {
 
   # Make readable (if file was created)
   if [[ -f "$target_path" ]]; then
-    chmod 644 "$target_path" 2>/dev/null || true
+    command chmod 644 "$target_path" 2>/dev/null || true
   else
     echo -e "\033[0;31m[✗]\033[0m Completion file was not created: $target_path"
     return 1

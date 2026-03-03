@@ -108,7 +108,7 @@ setup_modules() {
     info "To reset, remove rc-modules/ and run installer again"
   else
     if [[ -d "$CUSTOMRC_DIR/rc-modules.example" ]]; then
-      if cp -r "$CUSTOMRC_DIR/rc-modules.example" "$CUSTOMRC_DIR/rc-modules"; then
+      if command cp -r "$CUSTOMRC_DIR/rc-modules.example" "$CUSTOMRC_DIR/rc-modules"; then
         success "Created rc-modules/ from template"
       else
         error "Failed to copy rc-modules. Check permissions."
@@ -127,7 +127,7 @@ setup_configs() {
     info "To reset, remove configs.sh and run installer again"
   else
     if [[ -f "$CUSTOMRC_DIR/configs.example.sh" ]]; then
-      if cp "$CUSTOMRC_DIR/configs.example.sh" "$CUSTOMRC_DIR/configs.sh"; then
+      if command cp "$CUSTOMRC_DIR/configs.example.sh" "$CUSTOMRC_DIR/configs.sh"; then
         success "Created configs.sh from template"
       else
         error "Failed to create configs.sh. Check permissions."
@@ -165,7 +165,7 @@ backup_rc_file() {
 
   if [[ -f "$rc_file" ]]; then
     local backup_file="${rc_file}.backup.$(date +%Y%m%d_%H%M%S)"
-    if cp "$rc_file" "$backup_file"; then
+    if command cp "$rc_file" "$backup_file"; then
       success "Backed up $rc_file to $backup_file"
     else
       error "Failed to backup $rc_file to $backup_file"
@@ -182,7 +182,7 @@ export CUSTOMRC_PATH=\"$CUSTOMRC_DIR\"
 source \"\$CUSTOMRC_PATH/customrc.sh\""
 
   # Check if CustomRC is already sourced
-  if grep -q "CUSTOMRC_PATH" "$rc_file" 2>/dev/null; then
+  if command grep -q "CUSTOMRC_PATH" "$rc_file" 2>/dev/null; then
     warn "CustomRC already configured in $rc_file"
     return 0
   fi
