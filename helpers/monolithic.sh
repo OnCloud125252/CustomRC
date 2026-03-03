@@ -10,15 +10,15 @@ _monolithic_needs_rebuild() {
   # If cache doesn't exist, rebuild needed
   [[ ! -f "$cache_file" ]] && return 0
 
-  local cache_mtime
+  local cache_mtime=0
   cache_mtime=$(stat -f %m "$cache_file" 2>/dev/null || stat -c %Y "$cache_file" 2>/dev/null)
-  : ${cache_mtime:=0}
+  [[ -z "$cache_mtime" ]] && cache_mtime=0
 
   # Check configs.sh
   local config_mtime
   if [[ -f "$CURRENT_PATH/configs.sh" ]]; then
     config_mtime=$(stat -f %m "$CURRENT_PATH/configs.sh" 2>/dev/null || stat -c %Y "$CURRENT_PATH/configs.sh" 2>/dev/null)
-    : ${config_mtime:=0}
+    [[ -z "$config_mtime" ]] && config_mtime=0
     [[ "$config_mtime" -gt "$cache_mtime" ]] && return 0
   fi
 
@@ -26,7 +26,7 @@ _monolithic_needs_rebuild() {
   local version_mtime
   if [[ -f "$CURRENT_PATH/version" ]]; then
     version_mtime=$(stat -f %m "$CURRENT_PATH/version" 2>/dev/null || stat -c %Y "$CURRENT_PATH/version" 2>/dev/null)
-    : ${version_mtime:=0}
+    [[ -z "$version_mtime" ]] && version_mtime=0
     [[ "$version_mtime" -gt "$cache_mtime" ]] && return 0
   fi
 
@@ -37,7 +37,7 @@ _monolithic_needs_rebuild() {
     for file in "$dir"/*(N); do
       [[ ! -f "$file" ]] && continue
       file_mtime=$(stat -f %m "$file" 2>/dev/null || stat -c %Y "$file" 2>/dev/null)
-      : ${file_mtime:=0}
+      [[ -z "$file_mtime" ]] && file_mtime=0
       [[ "$file_mtime" -gt "$cache_mtime" ]] && return 0
     done
   done
