@@ -6,6 +6,37 @@ CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 
 source "$CURRENT_PATH/configs.sh"
 
+# Validate ignore lists exist (warn if missing and initialize as empty)
+_validate_ignore_lists() {
+  local warn_prefix="\033[33m[CustomRC Warning]\033[0m"
+  local missing=()
+
+  if [[ -z "${CUSTOMRC_GLOBAL_IGNORE_LIST+defined}" ]]; then
+    missing+=("CUSTOMRC_GLOBAL_IGNORE_LIST")
+    CUSTOMRC_GLOBAL_IGNORE_LIST=()
+  fi
+
+  if [[ -z "${CUSTOMRC_DARWIN_IGNORE_LIST+defined}" ]]; then
+    missing+=("CUSTOMRC_DARWIN_IGNORE_LIST")
+    CUSTOMRC_DARWIN_IGNORE_LIST=()
+  fi
+
+  if [[ -z "${CUSTOMRC_LINUX_IGNORE_LIST+defined}" ]]; then
+    missing+=("CUSTOMRC_LINUX_IGNORE_LIST")
+    CUSTOMRC_LINUX_IGNORE_LIST=()
+  fi
+
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    echo -e "${warn_prefix} Missing ignore lists in configs.sh:"
+    for name in "${missing[@]}"; do
+      echo -e "  - ${name}"
+    done
+    echo -e "${warn_prefix} These have been initialized as empty arrays."
+  fi
+}
+_validate_ignore_lists
+unset _validate_ignore_lists
+
 # Load CLI (available in both debug and production modes)
 source "$CUSTOMRC_HELPERS_PATH/customrc-cli.sh"
 
@@ -37,6 +68,10 @@ if [[ "$CUSTOMRC_DEBUG_MODE" == true ]]; then
   source "$CUSTOMRC_HELPERS_PATH/timing.sh"
   source "$CUSTOMRC_HELPERS_PATH/cache.sh"
   source "$CUSTOMRC_HELPERS_PATH/loader.sh"
+
+  # Show debug mode warning
+  log_message "${WARN} ${YELLOW}Debug mode enabled - Performance will be slower${NC}"
+  log_message "    ${WHITE}Set CUSTOMRC_DEBUG_MODE=false in configs.sh for production${NC}"
 
   # Create temporary file for combined configuration
   TEMP_COMBINED_RC=$(mktemp)
