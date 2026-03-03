@@ -90,6 +90,7 @@ customrc doctor
 | Module syntax | Validates all `.sh` files with `bash -n` |
 | Cache directory | Verifies cache directory is writable |
 | configs.sh | Confirms configuration file exists |
+| Updates | Checks if updates are available from remote (non-blocking) |
 
 **Example Output:**
 
@@ -107,10 +108,20 @@ customrc doctor
 [✓] Cache directory is writable
 [✓] configs.sh exists
 
+[i] Checking for updates...
+[✓] CustomRC is up to date
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [✓] All checks passed!
 ```
+
+**Update Check Notes:**
+
+- The update check fetches from the remote repository and reports if updates are available
+- If updates are found, a warning is shown: `N update(s) available (run: customrc update)`
+- If no git remote is configured or it's not a git repository, a warning is shown but does not count as an error
+- Network issues during the update check are reported as warnings, not errors
 
 ## Sync Commands
 

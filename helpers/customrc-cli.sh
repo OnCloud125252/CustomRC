@@ -358,7 +358,7 @@ _customrc_modules_list() {
       Linux)  ignore_list=("${CUSTOMRC_LINUX_IGNORE_LIST[@]}") ;;
     esac
 
-    for file in "$category_path"/*.sh; do
+    for file in "$category_path"/*.sh(N); do
       [[ ! -f "$file" ]] && continue
       local filename=$(basename "$file")
       local is_ignored=false
@@ -784,7 +784,7 @@ _customrc_doctor() {
   for dir in Global Darwin Linux; do
     local dir_path="$modules_path/$dir"
     [[ ! -d "$dir_path" ]] && continue
-    for file in "$dir_path"/*.sh; do
+    for file in "$dir_path"/*.sh(N); do
       [[ ! -f "$file" ]] && continue
       if ! bash -n "$file" 2>/dev/null; then
         _customrc_error "Syntax error in: $file"
@@ -827,6 +827,36 @@ _customrc_doctor() {
       _customrc_error "configs.sh not found"
     fi
     ((errors++))
+  fi
+
+  # Check for updates (non-blocking, informative only)
+  echo ""
+  _customrc_info "Checking for updates..."
+  if [[ -d "$customrc_path/.git" ]]; then
+    local remote=$(cd "$customrc_path" && git remote 2>/dev/null | head -n1)
+    if [[ -n "$remote" ]]; then
+      # Fetch in background and capture result
+      local fetch_output
+      if fetch_output=$(cd "$customrc_path" && git fetch "$remote" 2>&1); then
+        local branch=$(cd "$customrc_path" && git branch --show-current 2>/dev/null)
+        if [[ -n "$branch" ]]; then
+          local behind=$(cd "$customrc_path" && git rev-list --count HEAD.."$remote/$branch" 2>/dev/null || echo 0)
+          if [[ "$behind" -gt 0 ]]; then
+            _customrc_warn "$behind update(s) available (run: customrc update)"
+          else
+            _customrc_success "CustomRC is up to date"
+          fi
+        else
+          _customrc_warn "Could not determine current branch"
+        fi
+      else
+        _customrc_warn "Could not check for updates (network issue or no connection)"
+      fi
+    else
+      _customrc_warn "No git remote configured - cannot check for updates"
+    fi
+  else
+    _customrc_warn "CustomRC is not a git repository - cannot check for updates"
   fi
 
   echo ""

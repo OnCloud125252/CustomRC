@@ -124,6 +124,7 @@ Verifies:
 - Required helper files are present
 - Cache system is functional
 - Git repository status
+- **Available updates** (fetches from remote and reports if updates are available)
 
 ### 3. Check for Uncommitted Changes
 
@@ -230,7 +231,7 @@ Check that:
 customrc doctor
 ```
 
-This verifies all systems are functioning correctly after the update.
+This verifies all systems are functioning correctly after the update and confirms you're on the latest version.
 
 ### 4. Test Your Configuration
 
@@ -499,7 +500,7 @@ crontab -e
 | Update CustomRC | `customrc update` |
 | Force update (discard changes) | `customrc update --force` |
 | Check status | `customrc status` |
-| Run health checks | `customrc doctor` |
+| Run health checks + update check | `customrc doctor` |
 | Rebuild cache | `customrc cache rebuild` |
 | Rollback to commit | `git reset --hard <commit>` |
 
