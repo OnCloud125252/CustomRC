@@ -4,6 +4,10 @@ CURRENT_PATH=$(dirname "$0")
 CUSTOMRC_RC_MODULES_PATH="${CURRENT_PATH}/rc-modules"
 CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 
+# Save current monitor mode state and disable job notifications during init
+_CUSTOMRC_PREVIOUS_MONITOR_STATE=$-
+set +m
+
 # Read version from dedicated file (repo-managed, not user config)
 CUSTOMRC_VERSION=$(cat "$CURRENT_PATH/version" 2>/dev/null || echo "unknown")
 
@@ -167,6 +171,12 @@ fi
 if [[ -f "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh" && "$TERM_PROGRAM" != "WarpTerminal" && "$CUSTOMRC_PROMPT_FIX_AT_BOTTOM" == "true" ]]; then
   source "$CUSTOMRC_HELPERS_PATH/fix-prompt-at-bottom.sh"
 fi
+
+# Restore previous monitor mode state (if it was enabled)
+if [[ "$_CUSTOMRC_PREVIOUS_MONITOR_STATE" == *m* ]]; then
+  set -m
+fi
+unset _CUSTOMRC_PREVIOUS_MONITOR_STATE
 
 # Clean up common variables
 unset CURRENT_PATH CUSTOMRC_RC_MODULES_PATH CUSTOMRC_HELPERS_PATH
