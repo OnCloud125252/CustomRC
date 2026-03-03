@@ -894,6 +894,7 @@ _customrc_help() {
     echo "  status   Show overall status summary"
     echo "  doctor   Run health checks"
     echo "  version  Show version"
+    echo "  complete Manage shell completions"
     echo "  help     Show help for a command"
     echo ""
     echo -e "\033[1mExamples:${_CLI_NC}"
@@ -984,6 +985,23 @@ _customrc_help() {
       echo "  - Warns about uncommitted changes (use --force to override)"
       echo ""
       ;;
+    complete)
+      echo ""
+      echo -e "\033[1mCustomRC Complete${_CLI_NC} - Manage shell completions"
+      echo ""
+      echo -e "\033[1mUsage:${_CLI_NC}"
+      echo "  customrc complete <subcommand>"
+      echo ""
+      echo -e "\033[1mSubcommands:${_CLI_NC}"
+      echo "  install    Install completions for detected shell"
+      echo "  status     Check if completions are installed"
+      echo "  uninstall  Remove completions for current shell"
+      echo ""
+      echo -e "\033[1mExamples:${_CLI_NC}"
+      echo "  customrc complete install    # Install completions"
+      echo "  customrc complete status     # Check status"
+      echo ""
+      ;;
     status)
       echo ""
       echo -e "\033[1mCustomRC Status${_CLI_NC} - Show overall status summary"
@@ -1072,6 +1090,7 @@ customrc() {
     status)  _customrc_status ;;
     doctor)  _customrc_doctor ;;
     version) _customrc_version ;;
+    complete) _customrc_complete "$@" ;;
     help)    _customrc_help "$@" ;;
     -h|--help) _customrc_help "$@" ;;
     -v|--version) _customrc_version ;;
@@ -1082,3 +1101,6 @@ customrc() {
       ;;
   esac
 }
+
+# Source the autocomplete CLI integration
+source "${CUSTOMRC_HELPERS_PATH}/autocomplete-cli.sh" 2>/dev/null || true

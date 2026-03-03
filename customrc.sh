@@ -7,7 +7,7 @@ CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 # Read version from dedicated file (repo-managed, not user config)
 CUSTOMRC_VERSION=$(cat "$CURRENT_PATH/version" 2>/dev/null || echo "unknown")
 
-source "$CURRENT_PATH/configs.sh"
+source "$CURRENT_PATH/configs.sh" 2>/dev/null
 
 # Validate ignore lists exist (warn if missing and initialize as empty)
 _validate_ignore_lists() {
@@ -42,6 +42,17 @@ unset _validate_ignore_lists
 
 # Load CLI (available in both debug and production modes)
 source "$CUSTOMRC_HELPERS_PATH/customrc-cli.sh"
+
+# Check for autocomplete (one-time prompt, runs after a short delay to not block startup)
+# Only in interactive shells
+if [[ $- == *i* ]]; then
+  (
+    # Run in subshell to isolate any errors
+    source "$CUSTOMRC_HELPERS_PATH/autocomplete.sh" 2>/dev/null && \
+    autocomplete_check_and_offer 2>/dev/null
+  ) &
+  disown 2>/dev/null || true
+fi
 
 # Check if rc-modules directory exists
 if [[ ! -d "$CUSTOMRC_RC_MODULES_PATH" ]]; then
