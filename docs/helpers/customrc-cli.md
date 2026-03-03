@@ -429,10 +429,17 @@ customrc complete install
 
 **Completion directories:**
 
-| Shell | Directory |
-|-------|-----------|
-| Bash | `~/.bash_completion.d/` or `/etc/bash_completion.d/` |
-| Zsh | `~/.zsh/completions/` or `/usr/local/share/zsh/site-functions/` |
+| Shell | Directory (in order of preference) |
+|-------|-----------------------------------|
+| Bash | `~/.bash_completion.d/` (user-local, preferred) |
+| Bash | `/usr/local/etc/bash_completion.d/` (if writable) |
+| Bash | `/etc/bash_completion.d/` (if writable) |
+| Zsh | `~/.oh-my-zsh/custom/completions/` (if Oh My Zsh is installed) |
+| Zsh | `~/.zsh/completions/` (user-local, preferred) |
+| Zsh | `/usr/local/share/zsh/site-functions/` (if writable) |
+| Zsh | `/usr/share/zsh/site-functions/` (if writable) |
+
+User-local directories are preferred to avoid requiring `sudo` on macOS and other systems where system directories are protected.
 
 **Example Output:**
 
