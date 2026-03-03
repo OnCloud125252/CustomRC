@@ -85,7 +85,7 @@ if [[ "$CUSTOMRC_DEBUG_MODE" == true ]]; then
 
   # Show debug mode warning
   log_message "${WARN} ${YELLOW}Debug mode enabled - Performance will be slower${NC}"
-  log_message "    ${WHITE}Set CUSTOMRC_DEBUG_MODE=false in configs.sh for production${NC}"
+  log_message "    ${WHITE}Run customrc debug off to disable debug mode${NC}"
 
   # Create temporary file for combined configuration
   TEMP_COMBINED_RC=$(mktemp)

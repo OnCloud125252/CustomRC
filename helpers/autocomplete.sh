@@ -334,18 +334,36 @@ autocomplete_install() {
 
   local target_path="$completion_dir/$completion_file"
 
+  # Check if we have write permission to the completion directory
+  if [[ ! -w "$completion_dir" ]]; then
+    echo -e "\033[0;31m[✗]\033[0m Permission denied: cannot write to $completion_dir"
+    echo -e "\033[0;36m[i]\033[0m Try running with sudo, or use a user-local installation path"
+    return 1
+  fi
+
   # Generate and install completion script
   case "$shell_type" in
     bash)
-      _autocomplete_get_bash_completions > "$target_path"
+      if ! _autocomplete_get_bash_completions > "$target_path" 2>/dev/null; then
+        echo -e "\033[0;31m[✗]\033[0m Failed to install completions to: $target_path"
+        return 1
+      fi
       ;;
     zsh)
-      _autocomplete_get_zsh_completions > "$target_path"
+      if ! _autocomplete_get_zsh_completions > "$target_path" 2>/dev/null; then
+        echo -e "\033[0;31m[✗]\033[0m Failed to install completions to: $target_path"
+        return 1
+      fi
       ;;
   esac
 
-  # Make readable
-  chmod 644 "$target_path"
+  # Make readable (if file was created)
+  if [[ -f "$target_path" ]]; then
+    chmod 644 "$target_path" 2>/dev/null || true
+  else
+    echo -e "\033[0;31m[✗]\033[0m Completion file was not created: $target_path"
+    return 1
+  fi
 
   echo -e "\033[0;32m[✓]\033[0m Installed ${shell_type} completions to: $target_path"
   echo -e "\033[0;36m[i]\033[0m Restart your shell or source your rc file to activate completions"
