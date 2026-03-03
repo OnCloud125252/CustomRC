@@ -116,6 +116,22 @@ setup_modules() {
   fi
 }
 
+setup_configs() {
+  info "Setting up configs.sh..."
+
+  if [[ -f "$CUSTOMRC_DIR/configs.sh" ]]; then
+    warn "configs.sh already exists, skipping copy"
+    info "To reset, remove configs.sh and run installer again"
+  else
+    if [[ -f "$CUSTOMRC_DIR/configs.example.sh" ]]; then
+      cp "$CUSTOMRC_DIR/configs.example.sh" "$CUSTOMRC_DIR/configs.sh"
+      success "Created configs.sh from template"
+    else
+      error "configs.example.sh not found. Is CustomRC installed correctly?"
+    fi
+  fi
+}
+
 detect_shell_rc() {
   # Detect the user's primary shell and its rc file
   local shell_name=$(basename "$SHELL")
@@ -189,6 +205,7 @@ main() {
 
   check_prerequisites
   setup_modules
+  setup_configs
 
   local rc_file=$(detect_shell_rc)
   info "Detected shell config: $rc_file"
@@ -207,7 +224,10 @@ main() {
   echo "  2. Customize your modules in:"
   echo -e "     ${CYAN}$CUSTOMRC_DIR/rc-modules/${NC}"
   echo ""
-  echo "  3. Read the documentation:"
+  echo "  3. Customize your configuration:"
+  echo -e "     ${CYAN}$CUSTOMRC_DIR/configs.sh${NC}"
+  echo ""
+  echo "  4. Read the documentation:"
   echo -e "     ${CYAN}$CUSTOMRC_DIR/docs/user-guide.md${NC}"
   echo ""
 }

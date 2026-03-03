@@ -668,6 +668,15 @@ _customrc_update() {
 
   _customrc_success "Updated CustomRC to latest version"
 
+  # Ensure configs.sh exists (for users updating from older versions)
+  if [[ ! -f "$customrc_path/configs.sh" ]]; then
+    if [[ -f "$customrc_path/configs.example.sh" ]]; then
+      _customrc_info "Creating configs.sh from template..."
+      cp "$customrc_path/configs.example.sh" "$customrc_path/configs.sh"
+      _customrc_success "Created configs.sh"
+    fi
+  fi
+
   # Rebuild cache
   echo ""
   _customrc_info "Rebuilding cache..."
@@ -811,7 +820,12 @@ _customrc_doctor() {
   if [[ -f "$customrc_path/configs.sh" ]]; then
     _customrc_success "configs.sh exists"
   else
-    _customrc_error "configs.sh not found"
+    if [[ -f "$customrc_path/configs.example.sh" ]]; then
+      _customrc_error "configs.sh not found (but configs.example.sh exists)"
+      _customrc_info "Run 'cp $customrc_path/configs.example.sh $customrc_path/configs.sh' to create it"
+    else
+      _customrc_error "configs.sh not found"
+    fi
     ((errors++))
   fi
 
