@@ -999,7 +999,7 @@ _customrc_help() {
       echo "  customrc --version"
       echo ""
       echo -e "\033[1mOutput:${_CLI_NC}"
-      echo "  Displays the current CustomRC version from \$CUSTOMRC_VERSION"
+      echo "  Displays the current CustomRC version from the version file"
       echo ""
       ;;
     help)

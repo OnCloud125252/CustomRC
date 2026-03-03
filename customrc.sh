@@ -4,6 +4,9 @@ CURRENT_PATH=$(dirname "$0")
 CUSTOMRC_RC_MODULES_PATH="${CURRENT_PATH}/rc-modules"
 CUSTOMRC_HELPERS_PATH="${CURRENT_PATH}/helpers"
 
+# Read version from dedicated file (repo-managed, not user config)
+CUSTOMRC_VERSION=$(cat "$CURRENT_PATH/version" 2>/dev/null || echo "unknown")
+
 source "$CURRENT_PATH/configs.sh"
 
 # Validate ignore lists exist (warn if missing and initialize as empty)

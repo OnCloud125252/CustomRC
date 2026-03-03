@@ -22,6 +22,14 @@ _monolithic_needs_rebuild() {
     [[ "$config_mtime" -gt "$cache_mtime" ]] && return 0
   fi
 
+  # Check version file
+  local version_mtime
+  if [[ -f "$CURRENT_PATH/version" ]]; then
+    version_mtime=$(stat -f %m "$CURRENT_PATH/version" 2>/dev/null || stat -c %Y "$CURRENT_PATH/version" 2>/dev/null)
+    : ${version_mtime:=0}
+    [[ "$version_mtime" -gt "$cache_mtime" ]] && return 0
+  fi
+
   # Check all module directories
   local dir file file_mtime
   for dir in "$CUSTOMRC_RC_MODULES_PATH/Global" "$CUSTOMRC_RC_MODULES_PATH/Darwin" "$CUSTOMRC_RC_MODULES_PATH/Linux"; do
