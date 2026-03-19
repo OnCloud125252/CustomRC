@@ -395,7 +395,7 @@ _customrc_modules_list() {
       Linux)  ignore_list=("${CUSTOMRC_LINUX_IGNORE_LIST[@]}") ;;
     esac
 
-    for file in "$category_path"/*.sh(N); do
+    for file in "$category_path"/*.sh; do
       [[ ! -f "$file" ]] && continue
       local filename=$(basename "$file")
       local is_ignored=false
@@ -858,7 +858,7 @@ _customrc_doctor() {
   for dir in Global Darwin Linux; do
     local dir_path="$modules_path/$dir"
     [[ ! -d "$dir_path" ]] && continue
-    for file in "$dir_path"/*.sh(N); do
+    for file in "$dir_path"/*.sh; do
       [[ ! -f "$file" ]] && continue
       if ! bash -n "$file" 2>/dev/null; then
         _customrc_error "Syntax error in: $file"

@@ -39,7 +39,8 @@ process_rc_directory() {
 
   [[ ! -d "$directory" ]] && return
 
-  for filepath in "$directory"/*.sh(N); do
+  for filepath in "$directory"/*.sh; do
+    [[ ! -f "$filepath" ]] && continue
     filename="${filepath##*/}"
     if is_ignored "$filename" "$@"; then
       ((CUSTOMRC_IGNORED_COUNT++))
