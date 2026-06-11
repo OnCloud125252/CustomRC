@@ -2,6 +2,7 @@
 .worktrees
 docs/plans
 tests
+*.zwc
 
 # Personal user configurations (use *.example files as templates)
 rc-modules/

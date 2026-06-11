@@ -3,59 +3,30 @@
 
 CUSTOMRC_MONOLITHIC_CACHE="${CUSTOMRC_CACHE_DIR:-$HOME/.cache/customrc}/monolithic.sh"
 
-# Get file mtime in a cross-platform way
-# Usage: _get_mtime <file_path>
-# Sets: _MTIME_RESULT variable with the mtime (or 0 on error)
-_get_mtime() {
-  local file_path="$1"
-  _MTIME_RESULT=0
-
-  if [[ "$(uname)" == "Darwin" ]]; then
-    _MTIME_RESULT=$(stat -f %m "$file_path" 2>/dev/null) || _MTIME_RESULT=0
-  else
-    _MTIME_RESULT=$(stat -c %Y "$file_path" 2>/dev/null) || _MTIME_RESULT=0
-  fi
-
-  [[ -z "$_MTIME_RESULT" ]] && _MTIME_RESULT=0
-}
-
-# Checks if any source file is newer than the cached monolithic file
+# Checks if any source file is newer than the cached monolithic file.
+# Uses shell built-in `-nt` (no subprocess) for single-file checks and a single
+# `find -newer ... -print -quit` per directory (one subprocess, exits at first
+# match). Replaces an earlier implementation that forked `stat` per file.
 _monolithic_needs_rebuild() {
   local cache_file="$1"
 
   # If cache doesn't exist, rebuild needed
   [[ ! -f "$cache_file" ]] && return 0
 
-  local cache_mtime
-  _get_mtime "$cache_file"
-  cache_mtime="$_MTIME_RESULT"
+  # Check configs.sh and version (built-in mtime test, no subprocess)
+  [[ -f "$CURRENT_PATH/configs.sh" && "$CURRENT_PATH/configs.sh" -nt "$cache_file" ]] && return 0
+  [[ -f "$CURRENT_PATH/version"    && "$CURRENT_PATH/version"    -nt "$cache_file" ]] && return 0
 
-  # Check configs.sh
-  local config_mtime
-  if [[ -f "$CURRENT_PATH/configs.sh" ]]; then
-    _get_mtime "$CURRENT_PATH/configs.sh"
-    config_mtime="$_MTIME_RESULT"
-    [[ "$config_mtime" -gt "$cache_mtime" ]] && return 0
-  fi
-
-  # Check version file
-  local version_mtime
-  if [[ -f "$CURRENT_PATH/version" ]]; then
-    _get_mtime "$CURRENT_PATH/version"
-    version_mtime="$_MTIME_RESULT"
-    [[ "$version_mtime" -gt "$cache_mtime" ]] && return 0
-  fi
-
-  # Check all module directories
-  local dir file file_mtime
+  # Check module directories: pure-builtin glob + `-nt` test, no subprocess.
+  # (N.) = nullglob (empty dir won't trip nomatch) + regular files only.
+  # Bails at the first file newer than the cache. Replaces a `find` fork per
+  # directory; ~74 builtin mtime tests are far cheaper than 3 subprocesses.
+  local dir f
   for dir in "$CUSTOMRC_RC_MODULES_PATH/Global" "$CUSTOMRC_RC_MODULES_PATH/Darwin" "$CUSTOMRC_RC_MODULES_PATH/Linux"; do
     [[ ! -d "$dir" ]] && continue
-    while IFS= read -r file; do
-      [[ ! -f "$file" ]] && continue
-      _get_mtime "$file"
-      file_mtime="$_MTIME_RESULT"
-      [[ "$file_mtime" -gt "$cache_mtime" ]] && return 0
-    done < <(find "$dir" -maxdepth 1 -name "*.sh" -type f 2>/dev/null)
+    for f in "$dir"/*.sh(N.); do
+      [[ "$f" -nt "$cache_file" ]] && return 0
+    done
   done
 
   return 1
@@ -156,6 +127,11 @@ generate_monolithic_file() {
     echo "Error: Cache file was created but is empty: $cache_file" >&2
     return 1
   fi
+
+  # Compile to .zwc so subsequent shells load the cached AST instead of reparsing.
+  # zsh's `source` auto-prefers the .zwc when newer than the source file.
+  # Errors here are non-fatal: a missing .zwc just means slightly slower parse.
+  zcompile -R -- "${cache_file}.zwc" "$cache_file" 2>/dev/null
 
   return 0
 }
