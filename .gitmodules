@@ -1,3 +1,0 @@
-[submodule "rc-modules/Global/fzf-git"]
-	path = rc-modules/Global/fzf-git
-	url = https://github.com/junegunn/fzf-git.sh.git
