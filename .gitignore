@@ -1,5 +1,6 @@
 .DS_Store
-.worktrees
+/.claude/worktrees
+/.claude/recent-work
 docs/plans
 tests
 *.zwc
