@@ -110,7 +110,8 @@ cache_init() {
   local cache_file="$CUSTOMRC_CACHE_DIR/${name}.${extension}"
   local needs_regenerate=false
 
-  command mkdir -p "$CUSTOMRC_CACHE_DIR"
+  # Avoid forking `mkdir` on every startup; the dir almost always already exists.
+  [[ -d "$CUSTOMRC_CACHE_DIR" ]] || command mkdir -p "$CUSTOMRC_CACHE_DIR"
 
   # Check if cache needs regeneration
   if [[ ! -f "$cache_file" ]]; then
