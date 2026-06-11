@@ -1,0 +1,39 @@
+helpers/monolithic.sh
+  s_bba285c4fc7acc::t_e875b93fd0871f 131-135
+  s_93a042ca62428c::t_bb6df23ca2c4b9 20-24,27-29
+  s_bba285c4fc7acc::t_c46ce32d039544 6-9,16-18
+.gitignore
+  s_9fd9dcfaf0656f::t_2e679fbbfa030e 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "4a1740f15997956a14f621dc2f24e27aaf9b1551",
+  "prompts": {},
+  "sessions": {
+    "s_93a042ca62428c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2cc3fb00-d680-43aa-a4df-c9db79457607",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "OnCloud <anonymousaaaa41414141@gmail.com>"
+    },
+    "s_9fd9dcfaf0656f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e31b6928-6844-478c-bf63-19789d239ae7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "OnCloud <anonymousaaaa41414141@gmail.com>"
+    },
+    "s_bba285c4fc7acc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e165d10-d84f-4677-b0a2-5774feba0753",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "OnCloud <anonymousaaaa41414141@gmail.com>"
+    }
+  }
+}
