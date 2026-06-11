@@ -1,0 +1,19 @@
+helpers/cache.sh
+  s_93a042ca62428c::t_6693afd98a5b02 113-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "53ef09aa07e22115cdf563d6817aba060bd680cb",
+  "prompts": {},
+  "sessions": {
+    "s_93a042ca62428c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2cc3fb00-d680-43aa-a4df-c9db79457607",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "OnCloud <anonymousaaaa41414141@gmail.com>"
+    }
+  }
+}
